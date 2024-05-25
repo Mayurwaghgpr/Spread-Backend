@@ -3,7 +3,7 @@ import { DataTypes } from 'sequelize';
 import Database from '../utils/database.js';
 
 
-const BlogPost = Database.define('BlogPost', {
+const BlogPost = Database.define('Post', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -16,6 +16,10 @@ const BlogPost = Database.define('BlogPost', {
     content: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull:false,
     },
     authorId: {
         type: DataTypes.UUID,

@@ -1,3 +1,9 @@
+import Post from "../models/posts.js";
+import { validationResult } from "express-validator";
+import { Sequelize ,Op } from "sequelize";
+import { v4 as uuidv4 } from 'uuid';
+import User from '../models/user.js';
+// const myUUID = uuidv4();
 let posts = [
     {
         id: 1,
@@ -90,21 +96,115 @@ let posts = [
     },
 ];
 
-function getPosts(req, res) {
-    const type = req.query.type.toLowerCase();
-    console.log('ms' + type + 'ms')
-    const typePost = posts.filter(p => p.type === type);
-    console.log('filterpost', typePost)
-    if (typePost.length > 0) {
-        res.json(typePost);
-    } else {
-        res.json(posts);
+export const getPosts = async (req, res) => {
+    const posts = await Post.findAll();
+    if (posts) {
+        console.log(posts)
+        // res.json([posts.dataValues])
+    }
+//     }
+//     console.log(type)
+//    const post= await Post.findOne({
+//         where: {
+//                 type:{[Op.eq]:type}
+//             },
+//     })
+//     .then(post => {
+//       console.log(post.dataValues)
+//             res.json([post.dataValues])
+//   }).catch(err => {
+//     Post.findAll()
+// })
+    // console.log(a)
+    // const typePost = posts.filter(p => p.type === type);
+
+    // console.log('filterpost', typePost)
+    // if (typePost.length > 0) {
+    //     res.json(typePost);
+    // } else {
+    //     res.json(posts)
+    // }
+    }
+    
+export const getPostByType = async (req, res) => {
+     const type = req.query.type;
+    const post= await Post.findAll({
+         where: {
+                type: { [Op.eq]: type }
+            },
+            include: [{
+                model: User,
+                attributes: ['id', 'username']
+            }]
+    })
+    if (post.length>0) {
+        let postData= []
+        post.map(p => { console.log(p); postData.push(p.dataValues) })
+        // console.log(postData)
+        res.json(postData)
+        // console.log(post)
+        // 
+    }else {
+          res.status(404).send('Resource not found');
     }
 }
-const getPostsById = (req, res) => {
+
+ export const getPostsById = (req, res) => {
     const id = parseInt(req.params.id);
     const post = posts.find((el) => el.id === id);
     res.json(post);
 }
 
-export { getPostsById, getPosts };
+export const AddNewPost = (req, res) => {
+    // console.log(req.body)
+    const image = req.file;
+    console.log('this',image)
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        const err = new Error('invalid')
+        err.statusCode = 422;
+      throw err
+    }
+    if (!image) {
+        const err = new Error('Attach image file')
+        err.statusCode = 422;
+        throw err
+    }
+    const imageUrl = image.path
+
+    const post=Post.create({
+        title: req.body.title,
+        content: req.body.content,
+        imageUrl:imageUrl,
+        authorId: req.userId,
+    }).then((e) => {
+        console.log(e.dataValues)
+        res.sendStatus(201);
+    }).catch(err => {
+        err.statusCode = 500
+        throw (err)
+    })
+    
+    // console.log('this',req.body)
+    // const newpost = {
+       
+    // }
+    // posts.push(newpost);
+    
+}
+
+export const EditPost=(req, res) => {
+    const post = posts.find((el) => el.id === parseInt(req.params.id));
+    if (!post) return res.sendStatus(404); res.json({ message: "incorrect id" });
+    if (req.body.title) post.title = req.body.title;
+    if (req.body.author) post.author = req.body.author;
+    if (req.body.content) post.content = req.body.content;
+    post.date = new Date();
+}
+
+export const DeletePost=(req, res) => {
+    const post = posts.findIndex((el) => el.id === parseInt(req.params.id));
+    if (post === -1) res.sendStatus(404); res.json({ message: "post not found" });
+    posts.splice(post, 1);
+    res.json({ message: "deleted successfuly" })
+}
