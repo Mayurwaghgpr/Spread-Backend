@@ -4,6 +4,6 @@ import Isauth from '../middlewares/isAuth.js';
 
 const router = express.Router();
 
-router.get('/profile',Isauth, getUserprofile)
+router.get('/profile', getUserprofile)
 
 export default router

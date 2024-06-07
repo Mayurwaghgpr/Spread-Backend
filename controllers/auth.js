@@ -41,38 +41,30 @@ export const SignUp = async (req, res) => {
 
 export const LogIn =async (req, res) => {
     const { username, password } = req.body;
+    console.log(req.body)
 
     try {
         const user = await User.findOne({
-            where: { username },
+            where: { username:username }
         });
-
-        if (!user) {
+        console.log('this',user)
+        if (user === null) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
+        // console.log(isMatch)
         if (!isMatch) {
             console.log('Password Incorrect access denied');
             return res.status(401).json({ message: 'Invalid credentials' });
-        }else if(isMatch){
-           const token = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.SECRET, { expiresIn: "24h" });
-        console.log(token)
+        }
+                const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET, { expiresIn: "24h" });
+        // console.log(token)
                 res.status(200).json({
-                    message: 'User logged in successfully',
-                    user: {
-                        id: user.id,
-                        username: user.username,
-                        email: user.email,
-                    },
+                    token:token
                 });
-          res.status(201).json({
-            message: 'User registered successfully',
-            token:token
-        });
 
            
-    }
     } catch (err) {
         const error = new Error(err)
         error.errorStatusCode = 500;

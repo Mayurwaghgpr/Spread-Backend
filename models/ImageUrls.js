@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 
 import Database from '../utils/database.js';
 
-const Post = Database.define('post', {
+const imageUrls = Database.define('imageUrl', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -12,23 +12,17 @@ const Post = Database.define('post', {
         type: DataTypes.STRING,
         allowNull:false
     },
-    content: {
-           type: DataTypes.STRING,
-        allowNull:false
-    },
     imageUrl: {
-           type: DataTypes.STRING,
-        allowNull:false
-    },
-    topic: {
         type: DataTypes.STRING,
-        defaultValue:'general',
         allowNull:false
     },
-    authorId: {
+    index: {
+        type: DataTypes.NUMBER,
+        allowNull:false
+    },
+    postId: {
         type: DataTypes.UUID,
         allowNull:false
     }
-})
-
-export default Post
+});
+export default imageUrls;
