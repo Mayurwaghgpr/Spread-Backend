@@ -26,7 +26,7 @@ export const SignUp = async (req, res) => {
 
         console.log('New user created:', newUser);
         // You can uncomment and use JWT token creation if needed
-        const token = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.SECRET, { expiresIn: "24h" });
+        const token = jwt.sign({ id: newUser.id, email: newUser.email ,name:newUser.username }, process.env.SECRET, { expiresIn: "24h" });
         console.log(token)
         res.status(201).json({
             message: 'User registered successfully',
@@ -49,7 +49,7 @@ export const LogIn =async (req, res) => {
         });
         console.log('this',user)
         if (user === null) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(400).json({ message: 'User dos not exists' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -58,7 +58,7 @@ export const LogIn =async (req, res) => {
             console.log('Password Incorrect access denied');
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-                const token = jwt.sign({ id: user.id, email: user.email }, process.env.SECRET, { expiresIn: "24h" });
+                const token = jwt.sign({ id: user.id, email: user.email,name:username}, process.env.SECRET, { expiresIn: "24h" });
         // console.log(token)
                 res.status(200).json({
                     token:token

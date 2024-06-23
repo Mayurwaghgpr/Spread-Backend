@@ -10,14 +10,13 @@ const imageUrls = Database.define('imageUrl', {
     },
     title: {
         type: DataTypes.STRING,
-        allowNull:false
     },
     imageUrl: {
         type: DataTypes.STRING,
         allowNull:false
     },
     index: {
-        type: DataTypes.NUMBER,
+        type: DataTypes.INTEGER,
         allowNull:false
     },
     postId: {

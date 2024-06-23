@@ -8,6 +8,10 @@ const User = Database.define('User', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
+    userImage: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     username: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -20,6 +24,9 @@ const User = Database.define('User', {
         validate: {
             isEmail: true
         }
+    }, userInfo: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     password: {
         type: DataTypes.STRING,
@@ -29,6 +36,7 @@ const User = Database.define('User', {
         type: DataTypes.STRING,
         allowNull: true,
     }
+
 });
 
 export default User;

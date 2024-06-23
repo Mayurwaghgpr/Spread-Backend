@@ -12,8 +12,14 @@ const PostContent = Database.define('PostContent', {
         type: DataTypes.STRING,
         allowNull:false
     },
+    index: {
+        type: DataTypes.INTEGER,
+        allowNull:false
+    },
       postId: {
         type: DataTypes.UUID,
         allowNull:false
     }
 })
+export default PostContent
+

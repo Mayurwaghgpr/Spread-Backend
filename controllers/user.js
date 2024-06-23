@@ -2,33 +2,37 @@ import { Sequelize ,Op, where } from "sequelize";
 import User from "../models/user.js";
 import Post from "../models/posts.js";
 
-export const getUserprofile = async (req, res) => {
-    const id= req.userId
-      try {
-        const postCounts = await Post.findAll({
-            include: [{
-                model: User,
-                where:{id:id},
-                attributes: ['id', 'username']
-            }]
-        });
-
-          if (postCounts.length > 0) {
-              console.log(postCounts)
-            const postCountData = postCounts.map(post => {
-                return {
-                    authorId: post.authorId,
-                    username: post.User.username,
-                    postCount: post.dataValues.postCount
-                };
-            });
-
-            res.json(postCountData);
+export const getUserProfile = async (req, res) => {
+    const id= req.params.id.split(':')[1]
+    try {
+        const userInfo = await User.findOne({ where: { id: id }, attributes: { exclude: ['password'] }, });
+          console.log(userInfo.dataValues)
+        if (userInfo) {
+                res.status(200).json([userInfo.dataValues])
         } else {
             res.status(404).json({ message: 'No posts found' });
         }
     } catch (error) {
         console.error('Error fetching post counts:', error);
         res.status(500).json({ message: 'An error occurred while fetching post counts' });
+    }
+}
+export const getUserPostsById = async (req,res) => {
+    const userId = req.params.userId.split(':')[1]
+    console.log(userId)
+    try{
+      const posts = await Post.findAll({
+            where:{authorId:userId},
+        });
+
+        if (posts.length > 0) {
+            const postData = posts.map(p => p.dataValues);
+            res.status(200).json(postData);
+        } else {
+            res.status(404).send('No posts found');
+        }
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).send('Server error');
     }
 }

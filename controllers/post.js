@@ -1,104 +1,125 @@
 import Post from "../models/posts.js";
-import { validationResult } from "express-validator";
-import { Sequelize, Op, where } from "sequelize";
-import { v4 as uuidv4 } from 'uuid';
+// import { validationResult } from "express-validator";
+import {Op, where} from "sequelize";
+// import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user.js';
 import { deletePostImage } from "../utils/deletImages.js";
+import imageUrls from "../models/ImageUrls.js";
+import PostContent from "../models/PostContent.js";
+import { selectFields } from "express-validator/lib/field-selection.js";
 
 export const getPosts = async (req, res) => {
-    const type = req.query.type.toLowerCase();
-    console.log(req.query)
-    if (!type) {
-        try {
-            const posts = await Post.findAll({
-                include: [{
-                    model: User,
-                    attributes: ['id', 'username']
-                }]});
-            if (posts.length > 0) {
-                let postData = posts.map(p => p.dataValues);
-                res.status(200).json(postData);
-                console.log(postData)
-            } else {
-                res.status(404).send('Resource not found');
-            }
-        } catch (error) {
-            res.status(500).send('Server error');
+    const type = req.query.type?.toLowerCase();
+    const topic = type ? { topic: { [Op.eq]: type } } : {};
+
+    try {
+        const posts = await Post.findAll({
+            where: topic,
+            include: [{
+                model: User,
+                attributes: ['id', 'username']
+            }]
+        });
+
+        if (posts.length > 0) {
+            const postData = posts.map(p => p.dataValues);
+            res.status(200).json(postData);
+        } else {
+            res.status(404).send('No posts found');
         }
-    }
-    if (type) {
-        console.log(type)
-        try {
-            const post = await Post.findAll({
-                where: {
-                    type: { [Op.eq]: type }
-                },
-                include: [{
-                    model: User,
-                    attributes: ['id', 'username']
-                }]
-            });
-            if (post.length > 0) {
-                let postData = post.map(p => p.dataValues);
-                res.json(postData);
-                console.log(postData)
-            } else {
-                res.status(404).send('Resource not found');
-            }
-        } catch (error) {
-            res.status(500).send('Server error');
-        }
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).send('Server error');
     }
 };
 
-export const getPostsById = (req, res) => {
-    const id = parseInt(req.params.id);
-    const post = posts.find((el) => el.id === id);
-    if (post) {
-        res.json(post);
+export const getPostsById = async (req, res) => {
+   
+    const id = req.params.id.split(':')[1]
+    console.log(id)
+    const post = await Post.findOne({
+        where: { id: id },
+        include: [{
+                    model: User,
+                    attributes: ['id', 'username']
+        },]
+    });
+    // console.log(post)
+    const postData = await PostContent.findAll({
+        attributes:['id','Content','index',],
+        where:{postId:id},
+    })
+
+    const images = await imageUrls.findAll({
+        attributes:['id','title','imageUrl','index'],
+        where:{postId:id}
+    })
+     const postDataObject= [
+            post.dataValues,
+         ...postData.map(p => p.dataValues),
+         ...images.map(img => img.dataValues)
+     ];
+    console.log(postDataObject)
+      const contentItems = postDataObject || [];
+  contentItems.sort((a, b) => a.index - b.index);
+    console.log(contentItems)
+    if (contentItems) {
+        res.status(200).json(contentItems);
     } else {
         res.status(404).send('Post not found');
     }
 };
 
 export const AddNewPost = async (req, res) => {
-    console.log('adding...')
-    // console.log(req.body)
-    const blogData = JSON.parse(req.body.blog);
-    const files = req.files;
-    const topic =req.body.Topic
+  console.log('adding...');
+  const blogData = JSON.parse(req.body.blog);
+  const imageFileArray = req.files;
+  const topic = req.body.Topic.toLowerCase();
 
-    // Log the parsed blog data and files
-    console.log('Blog Data:', blogData);
-    console.log('Files:', files);
-    console.log('topic',topic)
+  const postTitle = blogData.find(p => p.index === 0)?.data;
+  const subtitelpagraph = blogData.at(1)?.data;
+  const titleImage = imageFileArray?.at(0);
 
-    // req.body.blog.forEach(element => {
-    //     console.log(element)
-    // })
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //     return res.status(422).json({ errors: errors.array() });
-    // }
+  if (!postTitle || !subtitelpagraph || !titleImage) {
+    return res.status(400).json({ error: 'Invalid data provided' });
+  }
+    console.log(subtitelpagraph)
 
-    // const image = req.file;
-    // if (!image) {
-    //     return res.status(422).json({ error: 'Attach image file' });
-    // }
-    // const imageUrl = image.path;
-    // console.log(imageUrl)
-    // try {
-    //     const newPost = await Post.create({
-    //         title: req.body.title,
-    //         content: req.body.content,
-    //         imageUrl: imageUrl,
-    //         authorId: req.userId,
-    //     });
-    //     res.status(201).json({newData:newPost , message:'success' });
-    // } catch (error) {
-    //     console.log('this',error)
-    //     res.status(500).send('Server error');
-    // }
+  console.log('title', postTitle);
+  console.log('image', titleImage);
+  console.log('Blog Data:', blogData);
+  const titleimageUrl = titleImage.path;
+
+  try {
+    const newPost = await Post.create({
+      title: postTitle,
+      subtitelpagraph: subtitelpagraph,
+      titleImage: titleimageUrl,
+      topic: topic,
+      authorId: req.userId,
+    });
+
+    if (blogData.length > 1) {
+      const otherContent = blogData
+        .filter(p => p.index !== 0 && p.index !== 1 )
+        .map(p => ({ Content: p.data, index: p.index, postId: newPost.id }));
+
+      await PostContent.bulkCreate(otherContent);
+    }
+
+    if (imageFileArray.length > 1) {
+      const otherImages = imageFileArray
+        .filter(image => image.index !== 0)
+        .map(image => ({ imageUrl: image.path,index:Number(image.fieldname.split('-')[1]), postId: newPost.id }));
+
+      await imageUrls.bulkCreate(otherImages);
+    }
+
+    res.status(201).json({ newData: newPost, message: 'success' });
+  } catch (error) {
+    console.log('this', error);
+    res.status(500).send('Server error');
+  }
 };
 
 export const EditPost = async (req, res) => {
@@ -122,18 +143,36 @@ export const EditPost = async (req, res) => {
 
 export const DeletePost = async (req, res) => {
     const postId = req.params.prodId;
-    console.log('this',req.params)
+    let imageurlarr = [];
+    console.log('this', req.params);
     try {
         const post = await Post.findByPk(postId);
         if (!post) {
             return res.status(404).send('Post not found');
         }
+        console.log(post)
+        imageurlarr.push(post.dataValues.titleImage)
+        const imageurls = await imageUrls.findAll({
+            where: {
+                postId: postId,
+            }
+        });
+        console.log('urls', imageurls);
+        imageurls.forEach(val => {
+            imageurlarr.push(val.dataValues.imageUrl)
+        })
+        if (imageurlarr.length > 0) {
 
-        const imageUrl = post.imageUrl;
-        await post.destroy();
-        deletePostImage(imageUrl);
-        res.status(200).json({ message: 'Post deleted successfully' });
+            const deleted =await deletePostImage(imageurlarr);
+            if (deleted) {
+            await post.destroy();
+            res.status(200).json({ message: 'Post deleted successfully' });
+            }
+          
+        }
+
     } catch (error) {
+        console.error('Error deleting post:', error);
         res.status(500).send('Server error');
     }
 };

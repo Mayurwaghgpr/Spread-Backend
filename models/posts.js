@@ -12,12 +12,12 @@ const Post = Database.define('post', {
         type: DataTypes.STRING,
         allowNull:false
     },
-    content: {
-           type: DataTypes.STRING,
+    subtitelpagraph: {
+        type: DataTypes.STRING,
         allowNull:false
     },
-    imageUrl: {
-           type: DataTypes.STRING,
+    titleImage: {
+        type: DataTypes.STRING,
         allowNull:false
     },
     topic: {
