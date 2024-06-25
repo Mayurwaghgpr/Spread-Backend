@@ -17,7 +17,7 @@ export const getPosts = async (req, res) => {
             where: topic,
             include: [{
                 model: User,
-                attributes: ['id', 'username']
+                 attributes: ['id', 'username','userImage']
             }]
         });
 
@@ -41,7 +41,7 @@ export const getPostsById = async (req, res) => {
         where: { id: id },
         include: [{
                     model: User,
-                    attributes: ['id', 'username']
+                    attributes: ['id', 'username','userImage']
         },]
     });
     // console.log(post)

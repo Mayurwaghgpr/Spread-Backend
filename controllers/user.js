@@ -22,7 +22,11 @@ export const getUserPostsById = async (req,res) => {
     console.log(userId)
     try{
       const posts = await Post.findAll({
-            where:{authorId:userId},
+          where: { authorId: userId },
+          include: [{
+                model: User,
+                   attributes: ['id', 'username','userImage']
+            }]
         });
 
         if (posts.length > 0) {
@@ -36,3 +40,34 @@ export const getUserPostsById = async (req,res) => {
         res.status(500).send('Server error');
     }
 }
+
+export const EditUserProfile = async (req, res) => {
+  const image = req.files ? req.files : null; // Assuming 'userImage' is the field name for the image
+  const data = req.body;
+  
+  console.log("Image:",image);
+  console.log("Data:", data);
+
+  try {
+    // Update user data
+    image&&console.log('true')
+    let updatedData ={};
+    image.length>0? updatedData = { ...data ,userImage:image[0].path}:updatedData = { ...data }
+    console.log(updatedData)
+    const user = await User.update(updatedData, {
+      where: { id: req.userId },
+      returning: true,
+      plain: true
+    });
+
+    if (user) {
+      console.log('this',user[1].dataValues)
+      return res.status(200).json({ ...user[1].dataValues });
+    } else {
+      return res.status(400).json({ message: "User not found" });
+    }
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};

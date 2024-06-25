@@ -58,7 +58,7 @@ export const LogIn =async (req, res) => {
             console.log('Password Incorrect access denied');
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-                const token = jwt.sign({ id: user.id, email: user.email,name:username}, process.env.SECRET, { expiresIn: "24h" });
+                const token = jwt.sign({ id: user.id, email: user.email,name:username,image:user.userImage}, process.env.SECRET, { expiresIn: "24h" });
         // console.log(token)
                 res.status(200).json({
                     token:token

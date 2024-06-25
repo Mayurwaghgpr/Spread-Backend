@@ -26,8 +26,12 @@ const __dirname = path.dirname(__filename);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // console.log('filer',file)
-    cb(null, 'images/');
+    console.log('filer', file)
+    if (file.fieldname === 'userImage') {
+      cb(null, 'images/userImage/');
+    } else {
+      cb(null, 'images/');
+    }
   },
   filename: (req, file, cb) => {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));

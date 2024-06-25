@@ -25,7 +25,7 @@ const User = Database.define('User', {
             isEmail: true
         }
     }, userInfo: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     password: {
