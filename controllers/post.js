@@ -7,7 +7,7 @@ import { deletePostImage } from "../utils/deletImages.js";
 import imageUrls from "../models/ImageUrls.js";
 import PostContent from "../models/PostContent.js";
 import { selectFields } from "express-validator/lib/field-selection.js";
-
+let imgaeArr=[]
 export const getPosts = async (req, res) => {
     const type = req.query.type?.toLowerCase();
     const topic = type ? { topic: { [Op.eq]: type } } : {};
@@ -66,61 +66,74 @@ export const getPostsById = async (req, res) => {
     if (contentItems) {
         res.status(200).json(contentItems);
     } else {
+
         res.status(404).send('Post not found');
     }
 };
 
 export const AddNewPost = async (req, res) => {
-  console.log('adding...');
-  const blogData = JSON.parse(req.body.blog);
-  const imageFileArray = req.files;
-  const topic = req.body.Topic.toLowerCase();
-
-  const postTitle = blogData.find(p => p.index === 0)?.data;
-  const subtitelpagraph = blogData.at(1)?.data;
-  const titleImage = imageFileArray?.at(0);
-
-  if (!postTitle || !subtitelpagraph || !titleImage) {
-    return res.status(400).json({ error: 'Invalid data provided' });
-  }
-    console.log(subtitelpagraph)
-
-  console.log('title', postTitle);
-  console.log('image', titleImage);
-  console.log('Blog Data:', blogData);
-  const titleimageUrl = titleImage.path;
-
   try {
+    console.log('Adding new post...');
+
+    const blogData = JSON.parse(req.body.blog);
+      
+    const imageFileArray = req.files;
+    const topic = req.body.Topic.toLowerCase();
+    imgaeArr = imageFileArray.map(image=>image.path)
+    const postTitle = blogData.find(p => p.index === 0)?.data;
+    const subtitleParagraph = blogData.at(1)?.data;
+    const titleImage = imageFileArray?.at(0);
+
+    if (!postTitle || !subtitleParagraph || !titleImage) {
+      return res.status(400).json({ error: 'Invalid data provided' });
+    }
+console.log('author',req.userId)
+    // console.log('Subtitle Paragraph:', subtitleParagraph);
+    // console.log('Title:', postTitle);
+    // console.log('Image:', titleImage);
+    console.log('Blog Data:', blogData);
+
+    const titleImageUrl = titleImage.path;
+console.log(subtitleParagraph)
     const newPost = await Post.create({
       title: postTitle,
-      subtitelpagraph: subtitelpagraph,
-      titleImage: titleimageUrl,
+      subtitelpagraph: subtitleParagraph,
+      titleImage: titleImageUrl,
       topic: topic,
       authorId: req.userId,
     });
+      
 
     if (blogData.length > 1) {
       const otherContent = blogData
-        .filter(p => p.index !== 0 && p.index !== 1 )
-        .map(p => ({ Content: p.data, index: p.index, postId: newPost.id }));
-
+        .filter(p => p.index !== 0 && p.index !== 1)
+          .map(p => ({ Content: p.data, index: p.index, postId: newPost.id }));
+        console.log('other',otherContent)
       await PostContent.bulkCreate(otherContent);
     }
-
+      
     if (imageFileArray.length > 1) {
       const otherImages = imageFileArray
-        .filter(image => image.index !== 0)
-        .map(image => ({ imageUrl: image.path,index:Number(image.fieldname.split('-')[1]), postId: newPost.id }));
+        .filter((_, idx) => idx !== 0)
+          .map(image => (
+              {
+          imageUrl: image.path,
+          index: Number(image.fieldname.split('-')[1]),
+          postId: newPost.id,
+        }));
 
       await imageUrls.bulkCreate(otherImages);
     }
 
     res.status(201).json({ newData: newPost, message: 'success' });
   } catch (error) {
-    console.log('this', error);
+        await deletePostImage(imgaeArr);
+      console.error('Error adding new post:', error);
+   
     res.status(500).send('Server error');
   }
 };
+
 
 export const EditPost = async (req, res) => {
     try {
@@ -161,13 +174,11 @@ export const DeletePost = async (req, res) => {
         imageurls.forEach(val => {
             imageurlarr.push(val.dataValues.imageUrl)
         })
-        if (imageurlarr.length > 0) {
+        if (imageurlarr.length > 0 ) {
 
-            const deleted =await deletePostImage(imageurlarr);
-            if (deleted) {
+            const deleted = await deletePostImage(imageurlarr);
             await post.destroy();
             res.status(200).json({ message: 'Post deleted successfully' });
-            }
           
         }
 

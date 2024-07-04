@@ -2,20 +2,27 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'
 dotenv.config()
 const Isauth = (req, res, next) => {
-    // console.log(req.body)
-    const Authorization = req.get('Authorization')
-    console.log(Authorization)
+    const Authorization = req.cookies.token;
+    let decodeToken;
+    console.log('cookie',Authorization)
     if (!Authorization) {
         const error = new Error('UnAuthorize Access , Access denied!')
         error.statusCode = 401;
         throw(error)
     }
-        const token = Authorization.split(' ')[1];
-        let decodeToken;
+        const token = Authorization
+      
         try {
             decodeToken = jwt.verify(token, process.env.SECRET)
+              console.log(decodeToken)
+            if (decoded.exp * 1000 < Date.now()) {
+                    res.clearCookie('token');
+                return res.status(401).json({message: 'access token has expired'})
+            }
         } catch (err) {
+          
             if (err.message === 'jwt expired') {
+                 res.clearCookie('token');
                  return res.status(401).json({message: 'access token has expired'})
             }
         }

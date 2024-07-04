@@ -48,10 +48,10 @@ const storage = multer.diskStorage({
 // Middleware
 app.use(cors({origin:'http://localhost:5173',methods:["POST","GET","PUT","PATCH","DELETE"],credentials:true}));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(authrouter)
+app.use('/auth',authrouter)
 // app.use(IsAuth)
 app.use(multer({storage:storage,fileFilter:fileFilter}).any())
 app.use('/images',express.static(path.join(__dirname,'images')))

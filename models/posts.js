@@ -13,7 +13,7 @@ const Post = Database.define('post', {
         allowNull:false
     },
     subtitelpagraph: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull:false
     },
     titleImage: {

@@ -9,7 +9,7 @@ const PostContent = Database.define('PostContent', {
         primaryKey: true
     },
     Content: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull:false
     },
     index: {
