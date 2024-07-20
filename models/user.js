@@ -32,8 +32,8 @@ const User = Database.define('User', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    token: {
-        type: DataTypes.STRING,
+    refreshToken: {
+        type: DataTypes.TEXT,
         allowNull: true,
     }
 

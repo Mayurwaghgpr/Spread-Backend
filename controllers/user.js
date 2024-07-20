@@ -1,7 +1,7 @@
 import { Sequelize ,Op, where } from "sequelize";
 import User from "../models/user.js";
 import Post from "../models/posts.js";
-import { deletePostImage } from "../utils/deletImages.js";
+import { deletePostImage } from "../utils/deleteImages.js";
 
 export const getUserProfile = async (req, res) => {
   console.log(req.params.id)
@@ -9,7 +9,7 @@ export const getUserProfile = async (req, res) => {
   console.log(id)
     try {
         const userInfo = await User.findOne({ where: { id: id }, attributes: { exclude: ['password'] }, });
-          
+          console.log(userInfo)
       if (userInfo) {
           // console.log('usersssh',userInfo.dataValues)
                 res.status(200).json(userInfo.dataValues)
@@ -22,7 +22,9 @@ export const getUserProfile = async (req, res) => {
     }
 }
 export const getUserPostsById = async (req,res) => {
-    const userId = req.params.userId.split(':')[1]
+  const userId = req.params.userId.split(':')[1]
+    const limit = parseInt(req.query.limit?.trim()) || 3;
+    const page = parseInt(req.query.page?.trim()) || 1;
     console.log(userId)
     try{
       const posts = await Post.findAll({
@@ -30,15 +32,21 @@ export const getUserPostsById = async (req,res) => {
           include: [{
             model: User,
                    attributes: ['id', 'username','userImage']
-            }]
+          }],
+             limit: limit,
+            offset: (page - 1) * limit
       });
      
 
         if (posts.length > 0) {
-          const postData = posts.map(p => p.dataValues);
+          const postData = posts.map(({ dataValues: { id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt, User } }) =>
+            ({id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt,
+                user: { ...User.dataValues }
+            }));
           
-           console.log(postData)
-            res.status(200).json(postData);
+          console.log(postData)
+          const postsobj={posts:postData}
+            res.status(200).json(postsobj);
         } else {
             res.status(404).send('No posts found');
         }
@@ -49,26 +57,37 @@ export const getUserPostsById = async (req,res) => {
 }
 
 export const EditUserProfile = async (req, res) => {
-  const image = req.files ? req.files : null; // Assuming 'userImage' is the field name for the image
+  const image = req.files ? req.files : null; 
   const data = req.body;
-  let updatedData ={};
-  // console.log("Image:",image);
-  // console.log("Data:", data);
-
+  let updatedData = {};
+  // console.log('image', image.length);
+  console.log(data)
   try {
-    // Update user data
-    // image&&console.log('true')
-    console.log('removedd',data.removeImage)
-    if (image.length > 0){
-      updatedData = { ...data, userImage: image[0].path }
+    // console.log(typeof (data.userImage));
+    // console.log(data.NewImageFile)
+
+    // Handle image update
+    if (image.length > 0) {
+      updatedData = { ...data, userImage: image[0].path };
+      console.log(updatedData)
+      if (data.userImage) {
+        await deletePostImage([data.userImage]);
+      }
     }
-    else if (data.removeImage === 'true')  {
-      updatedData = { userImage: null, username: data.username, email: data.email, userInfo: data.userInfo }
-       const deleted = await deletePostImage([data.userImage]);
-      console.log(deleted)
-    } else {
-      updatedData={...data}
+
+    // Handle image removal
+    if (data.removeImage && data.userImage && data.userImage !== 'null') {
+      console.log("first")
+      updatedData = { ...data, userImage: null };
+      await deletePostImage([data.userImage]);
+    } 
+    
+    // Handle case when there is no user image
+    if (!data.userImage && image.length === 0) {
+      updatedData = { ...data};
     }
+    console.log('no case',updatedData)
+    // Update user
     const user = await User.update(updatedData, {
       where: { id: req.userId },
       attributes: { exclude: ['password'] },
@@ -76,8 +95,9 @@ export const EditUserProfile = async (req, res) => {
       plain: true
     });
 
+    // console.log('thisuser', user);
+
     if (user) {
-      console.log('this',user[1].dataValues)
       return res.status(200).json({ ...user[1].dataValues });
     } else {
       return res.status(400).json({ message: "User not found" });
