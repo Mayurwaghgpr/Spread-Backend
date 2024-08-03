@@ -24,7 +24,8 @@ const User = Database.define('User', {
         validate: {
             isEmail: true
         }
-    }, userInfo: {
+    },
+    userInfo: {
         type: DataTypes.TEXT,
         allowNull: true,
     },

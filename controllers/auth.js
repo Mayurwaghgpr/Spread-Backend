@@ -34,6 +34,7 @@ export const SignUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await User.create({ username, email, password: hashedPassword });
+        // console.log({newUser})
 
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
             id: newUser.id,
@@ -41,12 +42,13 @@ export const SignUp = async (req, res) => {
             name: username,
             image: newUser.userImage,
         });
+        console.log({AccessToken})
 
         if (!AccessToken || !RefreshToken) {
             throw new Error("Failed to generate tokens");
         }
 
-        await User.update({ refreshToken: RefreshToken }, { where: { id: newUser.id } });
+        // await User.update({ refreshToken: RefreshToken }, { where: { id: newUser.id } });
 
         res.status(201)
             .cookie('AccessToken', AccessToken, CookieOptions)
@@ -69,6 +71,18 @@ export const LogIn = async (req, res) => {
     try {
         const user = await User.findOne({
             where: { username: username },
+            include: [
+        {
+          model: User,
+          as: 'Followers',
+          through: { attributes: { exclude: ['password'] }},
+        },
+        {
+          model: User,
+          as: 'Following',
+          through: { attributes: { exclude: ['password'] } },
+        }
+      ]
         });
 
         if (!user) {

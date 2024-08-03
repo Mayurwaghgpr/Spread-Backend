@@ -20,6 +20,8 @@ import { multerFileUpload } from "./middlewares/multer.middleware.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import publiRouter from "./routes/public.js"
+import Follow from "./models/Follow.js";
+import Archive from "./models/Archive.js";
 
 dotenv.config();
 
@@ -59,12 +61,33 @@ app.use('/posts', postsRouter);
 app.use('/user', userRouter);
 
 // Associations
+
+// User and Posts associations
 User.hasMany(Post, { foreignKey: 'authorId' });
 Post.belongsTo(User, { foreignKey: 'authorId' });
 Post.hasMany(imageUrls, { foreignKey: 'postId' });
 imageUrls.belongsTo(Post, { foreignKey: 'postId' });
 Post.hasMany(PostContent, { foreignKey: 'postId' });
 PostContent.belongsTo(Post, { foreignKey: 'postId' });
+
+//User follower and following associations
+User.belongsToMany(User, {
+      through: 'Follow',
+      as: 'Followers',
+      foreignKey: 'followedId',
+    });
+    User.belongsToMany(User, {
+      through: 'Follow',
+      as: 'Following',
+      foreignKey: 'followerId',
+    });
+Follow.belongsTo(User, { as: 'Follower', foreignKey: 'followerId' });
+Follow.belongsTo(User, { as: 'Followed', foreignKey: 'followedId' });
+
+// User and Post Archive association
+User.hasMany(Archive, { foreignKey: 'ArchiveBelongsTo' })
+Archive.belongsTo(User, { foreignKey: 'ArchiveBelongsTo' })
+
 
 // Error Handling Middleware
 app.use((error, req, res, next) => {

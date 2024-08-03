@@ -1,6 +1,6 @@
 import express from 'express';
 import {body} from 'express-validator';
-import { getPosts, getPostsById, AddNewPost, EditPost, DeletePost, publicUtilData } from '../controllers/post.js';
+import { getPosts, getPostsById, AddNewPost, EditPost, DeletePost } from '../controllers/post.js';
 import IsAuthe from '../middlewares/isAuth.js'
 const router = express.Router();
 

@@ -2,16 +2,31 @@ import { Sequelize ,Op, where } from "sequelize";
 import User from "../models/user.js";
 import Post from "../models/posts.js";
 import { deletePostImage } from "../utils/deleteImages.js";
+import Follow from "../models/Follow.js";
+import Archive from "../models/Archive.js";
+import formatPostData from "../utils/dataFormater.js";
 
 export const getUserProfile = async (req, res) => {
-  console.log(req.params.id)
-  const id = req.params.id.split(':')[1]
-  console.log(id)
+  const id = req.params.id ? req.params.id.split(':')[1] : req.userId;
+  console.log('params', req.params.id)
+  console.log('userId',req.userId)
     try {
-        const userInfo = await User.findOne({ where: { id: id }, attributes: { exclude: ['password'] }, });
-          console.log(userInfo)
+      const userInfo = await User.findOne({
+        where: { id: id }, attributes: { exclude: ['password'] },
+        include: [
+        {
+          model: User,
+          as: 'Followers',
+          through: { attributes:{ exclude: ['password'] } },
+        },
+        {
+          model: User,
+          as: 'Following',
+          through: { attributes: { exclude: ['password'] } },
+        }
+      ] });
+          // console.log(userInfo)
       if (userInfo) {
-          // console.log('usersssh',userInfo.dataValues)
                 res.status(200).json(userInfo.dataValues)
         } else {
             res.status(404).json({ message: 'No posts found' });
@@ -22,10 +37,10 @@ export const getUserProfile = async (req, res) => {
     }
 }
 export const getUserPostsById = async (req,res) => {
-  const userId = req.params.userId.split(':')[1]
+  const userId = req.params.userId
     const limit = parseInt(req.query.limit?.trim()) || 3;
     const page = parseInt(req.query.page?.trim()) || 1;
-    console.log(userId)
+
     try{
       const posts = await Post.findAll({
           where: { authorId: userId },
@@ -39,14 +54,8 @@ export const getUserPostsById = async (req,res) => {
      
 
         if (posts.length > 0) {
-          const postData = posts.map(({ dataValues: { id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt, User } }) =>
-            ({id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt,
-                user: { ...User.dataValues }
-            }));
-          
-          console.log(postData)
-          const postsobj={posts:postData}
-            res.status(200).json(postsobj);
+          const postData = formatPostData(posts);
+            res.status(200).json(postData);
         } else {
             res.status(404).send('No posts found');
         }
@@ -56,20 +65,134 @@ export const getUserPostsById = async (req,res) => {
     }
 }
 
+export const FollowUser = async (req, res) => {
+  const { followerId, followedId } = req.body;
+  if (followerId === followedId) {
+    return res.status(400).json({ error: "You cannot follow yourself" });
+  }
+  try {
+    const follow = await Follow.create({ followerId, followedId });
+  
+       const userInfo = await User.findOne({
+          where: { id: req.userId }, attributes: { exclude: ['password'] },
+          include: [
+          {
+            model: User,
+            as: 'Followers',
+            through: { attributes:{ exclude: ['password'] } },
+          },
+          {
+            model: User,
+            as: 'Following',
+            through: { attributes: { exclude: ['password'] } },
+          }
+        ] });
+
+    res.status(201).json(userInfo);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+export const Unfollow = async(req, res) => {
+  const { followerId, followedId } = req.body;
+
+  try {
+    const follow = await Follow.findOne({ where: { followerId, followedId } });
+    if (follow) {
+      await follow.destroy();
+       const userInfo = await User.findOne({
+          where: { id: req.userId }, attributes: { exclude: ['password'] },
+          include: [
+          {
+            model: User,
+            as: 'Followers',
+            through: { attributes:{ exclude: ['password'] } },
+          },
+          {
+            model: User,
+            as: 'Following',
+            through: { attributes: { exclude: ['password'] } },
+          }
+        ] });
+
+      res.status(200).json({ message: "Unfollowed successfully", data:userInfo});
+    } else {
+      res.status(400).json({ error: "Follow relationship does not exist" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+export const getFollowers = async(req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{ model: User, as: 'Followers' }]
+    });
+    res.status(200).json(user.Followers);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+export const getFollowing = async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{ model: User, as: 'Following' }]
+    });
+    res.status(200).json(user.Following);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+export const AddPostToArchive = async (req,res) => {
+  const PostIdToArchive= req.body.postId
+  try {
+   const archived= await Archive.create({
+      PostIds: PostIdToArchive,
+      ArchiveBelongsTo:req.userId
+   })
+    res.status(200).json({message:'post has be Achived successfully',archived})
+  } catch (error) {
+    
+  }
+}
+export const getArchivedPosts = async (req, res) => {
+  const userId = req.userId;
+  console.log('User ID:', userId);  // Improve logging for clarity
+
+  try {
+    const archivedPosts = await Archive.findAll({
+      where: { ArchiveBelongsTo: userId },
+
+    });
+
+    console.log('Archived Posts:', archivedPosts);
+
+    res.status(200).json({ archivedPosts });
+  } catch (error) {
+    console.error('Error fetching archived posts:', error);  // Better error logging
+    res.status(500).json({ message: 'An error occurred while fetching archived posts.' });
+  }
+};
+
+
 export const EditUserProfile = async (req, res) => {
   const image = req.files ? req.files : null; 
   const data = req.body;
   let updatedData = {};
-  // console.log('image', image.length);
-  console.log(data)
+
   try {
-    // console.log(typeof (data.userImage));
-    // console.log(data.NewImageFile)
+
 
     // Handle image update
     if (image.length > 0) {
       updatedData = { ...data, userImage: image[0].path };
-      console.log(updatedData)
+
       if (data.userImage) {
         await deletePostImage([data.userImage]);
       }
@@ -77,7 +200,7 @@ export const EditUserProfile = async (req, res) => {
 
     // Handle image removal
     if (data.removeImage && data.userImage && data.userImage !== 'null') {
-      console.log("first")
+  
       updatedData = { ...data, userImage: null };
       await deletePostImage([data.userImage]);
     } 
@@ -86,16 +209,26 @@ export const EditUserProfile = async (req, res) => {
     if (!data.userImage && image.length === 0) {
       updatedData = { ...data};
     }
-    console.log('no case',updatedData)
+
     // Update user
     const user = await User.update(updatedData, {
       where: { id: req.userId },
       attributes: { exclude: ['password'] },
+      include: [
+        {
+          model: User,
+          as: 'Followers',
+          through: { attributes: { exclude: ['password'] } },
+        },
+        {
+          model: User,
+          as: 'Following',
+          through: { attributes: { exclude: ['password'] } },
+        }
+      ],
       returning: true,
       plain: true
     });
-
-    // console.log('thisuser', user);
 
     if (user) {
       return res.status(200).json({ ...user[1].dataValues });

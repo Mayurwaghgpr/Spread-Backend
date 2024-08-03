@@ -1,26 +1,22 @@
 import Post from "../models/posts.js";
-import sequelize, { Op } from "sequelize";
+import sequelize, { Op, where } from "sequelize";
 import User from '../models/user.js';
 import { deletePostImage } from "../utils/deleteImages.js";
 import imageUrls from "../models/ImageUrls.js";
 import PostContent from "../models/PostContent.js";
-
+import formatPostData from "../utils/dataFormater.js";
 let imageArr = [];
 
-// Helper function to format post data
-const formatPostData = (posts) => {
-    return posts.map(({ dataValues: { id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt, User } }) => ({
-        id, title, subtitelpagraph, titleImage, topic, authorId, createdAt, updatedAt,
-        user: { ...User.dataValues }
-    }));
-};
 
 // Fetch all posts with optional topic filtering, pagination, and user inclusion
 export const getPosts = async (req, res) => {
-    const type = req.query.type?.toLowerCase().trim();
+    const type = req.query.type?.toLowerCase().trim()||'all' ;
     const limit = parseInt(req.query.limit?.trim()) || 3;
     const page = parseInt(req.query.page?.trim()) || 1;
-    const topicFilter = type ? { topic: { [Op.eq]: type } } : {};
+    // (type)
+    const topicFilter = type !=='all' ? { topic: { [Op.or]:[{
+                     [Op.like]: `${type}%`},{[Op.like]: `%${type}%`},{[Op.like]: `${type}`}
+                 ] } } : {};
 
     try {
         const posts = await Post.findAll({
@@ -47,7 +43,7 @@ export const getPosts = async (req, res) => {
 
 // Fetch a single post by its ID along with associated content and images
 export const getPostsById = async (req, res) => {
-    const id = req.params.id.split(':')[1];
+    const id = req.params.id
 
     try {
         const post = await Post.findOne({
@@ -87,13 +83,36 @@ export const getPostsById = async (req, res) => {
     }
 };
 
+export const searchData = async(req, res) => {
+const serchQuery = req.query.q
+ try {
+     const searchResult = await Post.findAll({
+         where: {
+             topic: {
+           [Op.or]:[{
+                     [Op.like]: `${serchQuery}%`},{[Op.like]: `%${serchQuery}%`},{[Op.like]: `${serchQuery}`}
+                 ]
+       }
+         },
+         attributes: ['topic']
+         ,
+         limit:10,
+       })
+     res.status(200).json(searchResult)
+       
+ } catch (error) {
+    
+ }
+    // console.log({searchResult})
+}
+
 // Fetch all users except the current user and distinct topics
-export const publicUtilData = async (req, res) => {
+export const userPrepsData = async (req, res) => {
     try {
         const AllSpreadUsers = await User.findAll({
             where: { id: { [Op.ne]: req.userId } },
             attributes: ['id', 'username', 'userImage', 'userInfo'],
-            order:[[ sequelize.fn( 'RANDOM' )]],
+            order: [[sequelize.fn('RANDOM')]],
             limit:3
         });
 

@@ -5,8 +5,7 @@ dotenv.config();
 
 const Isauth = (req, res, next) => {
     const Authorization = req.cookies.AccessToken || req.header("Authorization")?.replace("Bearer ", "");
-    // console.log(req.cookies);
- console.log(req.Cookies)
+
     if (!Authorization) {
         const error = new Error('Unauthorized Access, Access denied!');
         error.statusCode = 401;
