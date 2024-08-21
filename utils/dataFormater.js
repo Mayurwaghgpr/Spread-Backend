@@ -7,4 +7,6 @@ const formatPostData = (posts) => {
 };
 
 
+
+
 export default formatPostData

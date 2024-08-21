@@ -8,6 +8,9 @@ const PostContent = Database.define('PostContent', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
+    type: {
+        type: DataTypes.TEXT,
+    },
     Content: {
         type: DataTypes.TEXT,
         allowNull:false

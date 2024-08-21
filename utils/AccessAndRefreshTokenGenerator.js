@@ -5,18 +5,18 @@ dotenv.config();
 const AccessAndRefreshTokenGenerator = (user) => {
     try {
         // Select only the necessary user data for the token payload
-        const payload = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-        };
+        // const payload = {
+        //     id: user.id,
+        //     email: user.email,
+        //     name: user.name,
+        //     image: user.image,
+        // };
 
-        const AccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        const AccessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
         });
 
-        const RefreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+        const RefreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         });
 
