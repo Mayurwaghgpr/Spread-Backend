@@ -1,9 +1,10 @@
 import User from '../models/user.js';
-import Sequelize from 'sequelize';
+import Sequelize, { where } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import AccessAndRefreshTokenGenerator from '../utils/AccessAndRefreshTokenGenerator.js';
+import { mailTransporter } from '../utils/sendMail.js';
 
 dotenv.config();
 const saltRounds = 10;
@@ -37,7 +38,7 @@ export const SignUp = async (req, res) => {
 
         // Hash the password and create a new user
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const newUser = await User.create({ username, email, password: hashedPassword });
+        const newUser = await User.create({ username, email, password: hashedPassword,userImage:'images/placeholderImages/ProfOutlook.png' });
 
         // Generate access and refresh tokens
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
@@ -64,18 +65,18 @@ export const SignUp = async (req, res) => {
 };
 
 // Log in an existing user
-export const LogIn = async (req, res) => {
-    const { username, password } = req.body;
+export const SignIn = async (req, res) => {
+    const { email, password } = req.body;
 
     // Validate required fields
-    if (!username || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
         // Find user by username
         const user = await User.findOne({
-            where: { username },
+            where: { email },
             include: [
                 {
                     model: User,
@@ -188,5 +189,59 @@ export const Logout = async (req, res) => {
     } catch (error) {
         console.error('Error during logout:', error);
         res.status(500).json({ message: 'Server error' });
+
     }
 };
+
+
+
+export const forgotPass = async (req,res,next) => {
+    const { email } = req.body;
+try {
+    
+        const user = await User.findOne({ where: { email: email } });
+    console.log(user)
+        if (!user) {
+            res.status(404).json({ message: 'user not Found' });
+            return;
+        }
+        
+        const {AccessToken}=AccessAndRefreshTokenGenerator({email})
+        
+       const mail=await mailTransporter.sendMail({
+           to: email,
+           
+            subject: 'Reset password for ...Spread',
+            html:`<p>Click the link below to reset your password:</p>
+        <a href="${process.env.FRONT_END_URL}Resetpassword/${AccessToken}" style="color: #1a73e8; text-decoration: none;">
+            Reset Password
+        </a>
+        <p>If you did not request this, please ignore this email.</p>`,
+       })
+    
+    res.status(200).json({success:"Mail successfuly sent to "+mail.messageId})
+        
+} catch (error) {
+    next(error)
+}
+    
+}
+
+
+export const resetPassword = async (req,res,next) => {
+    const token = req.params.token;
+    const newpassword = req.body.password
+console.log(token)
+  try {
+      let decodeToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        if (decodeToken.exp * 1000 < Date.now()) {
+              return res.status(401).json({ message: 'token has expired ,cannot Reset password' });
+        }
+      const email = decodeToken.email;
+        const hashedPassword = await bcrypt.hash(newpassword, saltRounds);
+       await User.update({password:hashedPassword},{ where: { email: email } });
+      res.status(200).json({success:'Password updated successfuly'})
+  } catch (error) {
+    next(error)
+  }
+}

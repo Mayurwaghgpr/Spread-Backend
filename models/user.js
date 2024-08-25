@@ -10,7 +10,8 @@ const User = Database.define('User', {
     },
     userImage: {
         type: DataTypes.STRING,
-        allowNull: true,
+        defaultValue: "images/placeholderImages/ProfOutlook.png",
+        allowNull: false,
     },
     username: {
         type: DataTypes.STRING,

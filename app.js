@@ -1,41 +1,38 @@
 import express from "express";
 import { fileURLToPath } from 'url';
-import bodyParser from "body-parser";
-import cors from "cors";
 import path from 'path';
 import dotenv from 'dotenv';
+import bodyParser from "body-parser";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth2";
+
+import sequelize from './utils/database.js';
 import authRouter from "./routes/auth.js";
 import postsRouter from './routes/posts.js';
 import userRouter from './routes/user.js';
 import publiRouter from "./routes/public.js";
-import sequelize from './utils/database.js';
+import { multerFileUpload } from "./middlewares/multer.middleware.js";
 import Post from "./models/posts.js";
 import User from "./models/user.js";
-import cookieParser from "cookie-parser";
-import { multerFileUpload } from "./middlewares/multer.middleware.js";
 import imageUrls from "./models/ImageUrls.js";
 import PostContent from "./models/PostContent.js";
 import Follow from "./models/Follow.js";
 import Archive from "./models/Archive.js";
-// const passport = require("passport");
-// const GoogleStrategy = require("passport-google-oauth20").Strategy;
-import passport from "passport";
-import {Strategy as GoogleStrategy }from"passport-google-oauth2"
-import AccessAndRefreshTokenGenerator from "./utils/AccessAndRefreshTokenGenerator.js";
+
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000","http://localhost:5173", "http://localhost:5174"],
+  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
   credentials: true,
 }));
-
 
 app.use(express.json());
 app.use(cookieParser());
@@ -53,28 +50,7 @@ passport.use(
       callbackURL: process.env.GOOGLE_REDIRECT_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await User.findOne({ where: { email: profile.emails[0].value } });
-        if (!user) {
-          user = await User.create({
-            username: profile.displayName,
-            email: profile.emails[0].value,
-            userImage:profile.photos[0].value,
-            password: '', // No password needed for OAuth
-          });
-        }
-
-        const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
-          id: user.id,
-          email: user.email,
-          name: user.username,
-          image: profile._json.picture,
-        });
-
-        done(null, { user, AccessToken, RefreshToken });
-      } catch (err) {
-        done(err, false);
-      }
+      done(null, profile); 
     }
   )
 );
@@ -84,8 +60,12 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findByPk(id);
-  done(null, user);
+  try {
+    const user = await User.findByPk(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 // Initialize Passport
@@ -130,10 +110,11 @@ app.use((error, req, res, next) => {
   console.error('Error:', error);
   const status = error.statusCode || 500;
   const message = error.message || 'An error occurred';
-  res.status(status).json({ message });
+  res.status(status).json({
+    message,
+    ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
+  });
 });
-
-
 
 // Database Sync and Server Start
 sequelize.sync()
@@ -143,5 +124,8 @@ sequelize.sync()
     });
   })
   .catch(err => {
-    console.error('Database connection failed:', err);
+    console.error('Database connection failed:', err.message);
+    if (process.env.NODE_ENV === 'development') {
+      console.error(err.stack);
+    }
   });

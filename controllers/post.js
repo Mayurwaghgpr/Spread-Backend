@@ -133,6 +133,7 @@ export const userPrepsData = async (req, res) => {
             where: { id: { [Op.ne]: req.userId } },
             attributes: ['id', 'username', 'userImage', 'userInfo'],
             order: [[sequelize.fn('RANDOM')]], // Random order
+            
             limit: 3
         });
 
