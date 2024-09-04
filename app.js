@@ -16,10 +16,9 @@ import publiRouter from "./routes/public.js";
 import { multerFileUpload } from "./middlewares/multer.middleware.js";
 import Post from "./models/posts.js";
 import User from "./models/user.js";
-import imageUrls from "./models/ImageUrls.js";
-import PostContent from "./models/PostContent.js";
 import Follow from "./models/Follow.js";
 import Archive from "./models/Archive.js";
+
 
 dotenv.config();
 
@@ -79,11 +78,9 @@ app.use('/user', userRouter);
 
 // Associations
 User.hasMany(Post, { foreignKey: 'authorId' });
-Post.belongsTo(User, { foreignKey: 'authorId' });
-Post.hasMany(imageUrls, { foreignKey: 'postId' });
-imageUrls.belongsTo(Post, { foreignKey: 'postId' });
-Post.hasMany(PostContent, { foreignKey: 'postId' });
-PostContent.belongsTo(Post, { foreignKey: 'postId' });
+Post.belongsTo(User, {  foreignKey: 'authorId' });
+
+
 
 // User follower and following associations
 User.belongsToMany(User, {

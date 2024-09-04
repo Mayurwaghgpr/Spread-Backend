@@ -3,13 +3,10 @@ import {
   EditUserProfile,
   getUserPostsById,
   getUserProfile,
-  FollowUser,
   getFollowers,
   getFollowing,
-  Unfollow,
-  AddPostToArchive,
   getArchivedPosts,
-  removeFromArchive,
+
 } from '../controllers/user.js';
 import IsAuth from '../middlewares/isAuth.js';
 
@@ -25,13 +22,6 @@ router.get('/archivedPosts', IsAuth, getArchivedPosts); // Changed route to 'arc
 
 // Post Routes
 router.post('/editProfile', IsAuth, EditUserProfile);
-router.post('/unfollow', IsAuth, Unfollow);
 
-// Put Routes
-router.put('/follow', IsAuth, FollowUser);
-router.put('/archive', IsAuth, AddPostToArchive); // Changed route to 'archive' for consistency
-
-//Delete Routes
-router.delete('/removeFromArchive',IsAuth,removeFromArchive)
 
 export default router;

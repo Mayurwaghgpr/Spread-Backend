@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
-
 import Database from '../utils/database.js';
+import Post from './posts.js';
 
 const PostContent = Database.define('PostContent', {
     id: {
@@ -10,19 +10,33 @@ const PostContent = Database.define('PostContent', {
     },
     type: {
         type: DataTypes.TEXT,
+        allowNull: false
     },
-    Content: {
+    content: {
         type: DataTypes.TEXT,
-        allowNull:false
+        allowNull: false
+    },
+    otherInfo: {
+        type: DataTypes.STRING,
+        defaultValue: 'text content',
     },
     index: {
         type: DataTypes.INTEGER,
-        allowNull:false
+        allowNull: false
     },
-      postId: {
+    postId: {
         type: DataTypes.UUID,
-        allowNull:false
+        allowNull: false,
+        references: {
+            model: Post,
+            key: 'id'
+        },
+        onDelete: 'CASCADE', // Ensures deletion of related content on post deletion
+        onUpdate: 'CASCADE'  // Ensures cascading updates on postId changes
     }
-})
-export default PostContent
+});
 
+PostContent.belongsTo(Post, { as: 'post', foreignKey: 'postId' });
+Post.hasMany(PostContent, { as: 'postContent', foreignKey: 'postId' });
+
+export default PostContent;

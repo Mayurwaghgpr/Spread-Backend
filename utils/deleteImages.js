@@ -5,8 +5,8 @@ export const deletePostImage = async (imageUrls) => {
     try {
         // Use map to create an array of Promises returned by unlink
         const deletePromises = imageUrls.map(async(url) => {
-        console.log(url);
-         return fs.unlink(url);
+
+         return await fs.unlink(url);
         });
         await Promise.all(deletePromises)
         return 'All image files deleted successfully';

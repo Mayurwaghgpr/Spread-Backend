@@ -1,20 +1,31 @@
 import express from 'express';
 import { 
-  getPosts, 
   userPrepsData, 
-  searchData 
-} from '../controllers/post.js';
-import IsAuthe from '../middlewares/isAuth.js'; // Import the authentication middleware
+  searchData, 
+  FollowUser,
+  AddPostToArchive,
+  removeFromArchive,
+  LikePost,
+} from '../controllers/public.js';
+import IsAuth from '../middlewares/isAuth.js'; // Import the authentication middleware
 
 const router = express.Router();
 
 // Route to get preparation data for posts (authenticated users only)
-router.get('/prepsdata', IsAuthe, userPrepsData);
+router.get('/prepsdata', IsAuth, userPrepsData);
 
-// Route to get all posts (authenticated users only)
-router.get("/posts", IsAuthe, getPosts);
 
 // Route to search for posts based on query parameters (authenticated users only)
-router.get("/search", IsAuthe, searchData);
+router.get("/search", IsAuth, searchData);
+
+
+// Put Routes
+router.put('/Like/',IsAuth,LikePost)
+router.put('/follow', IsAuth, FollowUser);
+router.put('/archive', IsAuth, AddPostToArchive);// Changed route to 'archive' for consistency
+
+
+//Delete Routes
+router.delete('/removeFromArchive',IsAuth,removeFromArchive)
 
 export default router;

@@ -1,7 +1,9 @@
 import multer from "multer";
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
 
+dotenv.config();
 // Retrieve the current file's path and directory name
 // Uncomment these lines if needed in your project setup
 // const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +15,7 @@ const storage = multer.diskStorage({
     console.log('file', file);
     if (file.fieldname === 'NewImageFile') {
       // Save images for 'NewImageFile' in 'images/userImage/'
-      cb(null, path.join('images/userImage/'));
+      cb(null, path.join(`images/userImage/`));
     } else {
       // Save other files in 'images/'
       cb(null, path.join('images/'));

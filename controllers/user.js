@@ -2,10 +2,9 @@ import { Sequelize, Op } from "sequelize";
 // import Redis from "redis";
 import User from "../models/user.js";
 import Post from "../models/posts.js";
-import Follow from "../models/Follow.js";
-import Archive from "../models/Archive.js";
 import formatPostData from "../utils/dataFormater.js";
 import { deletePostImage } from "../utils/deleteImages.js";
+import Likes from "../models/Likes.js";
 // import redisClient from "../utils/redisClient.js";
 
 const EXPIRATION = 3600;
@@ -25,8 +24,8 @@ export const getUserProfile = async (req, res) => {
       where: { id },
       attributes: { exclude: ['password'] },
       include: [
-        { model: User, as: 'Followers', through: { attributes: [] }, attributes: ['id'] },
-        { model: User, as: 'Following', through: { attributes: [] }, attributes: ['id'] },
+        { model: User, as: 'Followers', through: { attributes: { exclude: ['password']}  }, attributes: ['id'] },
+        { model: User, as: 'Following', through: { attributes:{ exclude: ['password']} }, attributes: ['id'] },
         { model: Post, as: 'SavedPosts', through: { attributes: [] } },
       ]
     });
@@ -53,7 +52,14 @@ export const getUserPostsById = async (req, res) => {
   try {
     const posts = await Post.findAll({
       where: { authorId: userId },
-      include: [{ model: User, attributes: ['id', 'username', 'userImage'] }],
+      include: [{
+                    model: User,
+                    attributes: ['id', 'username', 'userImage']
+                }, {
+                    model: Likes,  // Include likes
+                    as:'Likes',
+                    required: false
+                }],
       limit,
       offset: (page - 1) * limit
     });
@@ -70,62 +76,6 @@ export const getUserPostsById = async (req, res) => {
   }
 };
 
-// Follow a user
-export const FollowUser = async (req, res, next) => {
-  const { followerId, followedId } = req.body;
-  console.log({ followerId, followedId });
-
-  if (followerId === followedId) {
-    return res.status(400).json({ status: "error", message: "You cannot follow yourself" });
-  }
-
-  try {
-    // Check if the follow relationship already exists
-    const existingFollow = await Follow.findOne({ where: { followerId, followedId } });
-
-    if (existingFollow) {
-      return res.status(200).json({ status: "success", message: "Already following this user" });
-    }
-
-    // Create a new follow relationship
-    await Follow.create({ followerId, followedId });
-    await redisClient.del(followerId);
-
-    console.log('success')
-    res.status(201).json({ status: "success" });
-  } catch (error) {
-    if (error instanceof Sequelize.UniqueConstraintError) {
-      res.status(409).json({ status: "error", message: "You are already following this user" });
-    } else {
-      console.error("Error following user:", error);
-      next(error);
-    }
-  }
-};
-
-// Unfollow a user
-export const Unfollow = async (req, res) => {
-  const { followerId, followedId } = req.body;
-  console.log({ followerId, followedId })
-  if (!followerId || !followedId) {
-    return res.status(400).json({ error: "Missing followerId or followedId" });
-  }
-
-  try {
-    const follow = await Follow.findOne({ where: { followerId, followedId } });
-
-    if (follow) {
-      await follow.destroy();
-      await redisClient.del(followerId);
-      res.status(200).json({ message: "Unfollowed successfully" });
-    } else {
-      res.status(400).json({ error: "Follow relationship does not exist" });
-    }
-  } catch (error) {
-    console.error("Server error:", error);  // Log the error for debugging
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
 
 
 // Get followers of the current user
@@ -157,52 +107,6 @@ export const getFollowing = async (req, res) => {
   }
 };
 
-// Add a post to the user's archive
-export const AddPostToArchive = async (req, res) => {
-  const { postId } = req.body;
-
-  try {
-    const exist = await Archive.findOne({
-      where:{PostId: postId,
-      UserId: req.userId}
-    });
-    console.log({ exist })
-    if (exist) {
-       return res.status(400).json({ message: "post already saved" });
-    }
-
-    const archived = await Archive.create({
-      PostId: postId,
-      UserId: req.userId
-    });
-          await redisClient.del(req.userId);
-    res.status(200).json({ message: 'Post archived successfully', archived });
-  } catch (error) {
-    console.error('Error archiving post:', error);
-    res.status(500).json({ message: 'An error occurred while archiving the post' });
-  }
-};
-
-// Remove archived post for current user
-export const removeFromArchive = async (req, res) => {
-  const UserId = req.userId;
-  const postId = req.query.id
-  console.log({postId})
-try {
-        const exist = await Archive.findOne({
-        where:{PostId: postId,UserId}
-        });
-  if (exist) {
-    await exist.destroy();
-         await redisClient.del(UserId);
-    res.status(200).json({message:'succesfully removes'})
-  }
-} catch (error) {
-   console.error('Error archiving post:', error);
-    res.status(500).json({ message: 'An error occurred while archiving the post' });
-
-}
-} 
 
 // Get archived posts for the current user
 export const getArchivedPosts = async (req, res) => {
@@ -211,21 +115,32 @@ export const getArchivedPosts = async (req, res) => {
   const page = parseInt(req.query.page?.trim()) || 1; // Default page to 1
 
   try {
-    const archivedPosts = await User.findByPk(userId, {
+    const {SavedPosts} = await User.findByPk(userId, {
       include: [{
         model: Post,
         as: 'SavedPosts',
-        through: { attributes: [] }
+        through: { attributes: [] },
+        include: [
+          {
+                    model: User,
+                    attributes: ['id', 'username', 'userImage']
+                }, {
+                    model: Likes,  // Include likes
+                    as:'Likes',
+                    required: false
+                }
+        ],
+ 
       }],
       limit,
       offset: (page - 1) * limit
     });
 
-    if (!archivedPosts || archivedPosts.SavedPosts.length === 0) {
+    if (!SavedPosts || SavedPosts.length === 0) {
       return res.status(404).json({ message: 'No archived posts found' });
     }
-
-    res.status(200).json(archivedPosts.SavedPosts);
+  const postData = formatPostData(SavedPosts);
+    res.status(200).json(postData);
   } catch (error) {
     console.error('Error fetching archived posts:', error);
     res.status(500).json({ message: 'An error occurred while fetching archived posts' });

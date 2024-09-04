@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Middleware to check if the user is authenticated
-const Isauth = (req, res, next) => {
+const IsAuth = (req, res, next) => {
     // Get the authorization token from cookies or headers
     const Authorization = req.cookies.AccessToken || req.header("Authorization")?.replace("Bearer ", "");
 
@@ -50,4 +50,4 @@ const Isauth = (req, res, next) => {
     next(); // Proceed to the next middleware or route handler
 };
 
-export default Isauth;
+export default IsAuth;
