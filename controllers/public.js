@@ -73,11 +73,12 @@ export const searchData = async (req, res) => {
 
 export const LikePost = async (req, res, next) => {
     const postId = req.body.likedPostId;
-    // console.log(postId)
+  console.log(postId)
+  
     try {
         const exist = await Likes.findOne({ where: { likedBy: req.userId, postId: postId } });
         
-        console.log(exist)
+        // console.log(exist)
         if (exist) {
             await exist.destroy();
           const updtLikes = await Likes.findAll({ where: { postId } })

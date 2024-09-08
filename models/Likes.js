@@ -16,7 +16,6 @@ const Likes = Database.define('Like', {
     },
     likedBy: {
         type: DataTypes.UUID,
-        unique: true,
         allowNull: false,
     },
     postId: {

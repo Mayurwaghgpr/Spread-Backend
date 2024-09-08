@@ -26,6 +26,6 @@ router.put('/archive', IsAuth, AddPostToArchive);// Changed route to 'archive' f
 
 
 //Delete Routes
-router.delete('/removeFromArchive',IsAuth,removeFromArchive)
+router.delete('/Archive',IsAuth,removeFromArchive)
 
 export default router;
