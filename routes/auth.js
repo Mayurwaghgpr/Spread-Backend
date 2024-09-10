@@ -3,8 +3,9 @@ const router = express.Router();
 import { SignUp, SignIn, Logout, RefreshToken, forgotPass, resetPassword } from '../controllers/auth.js';
 import IsAuth from '../middlewares/isAuth.js';
 import passport from 'passport';
-import { googleAuth } from '../controllers/mediaAuth.js';
-
+import { gitHubAuth, googleAuth } from '../controllers/mediaAuth.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Route to initiate Google login
 router.get(
@@ -15,8 +16,18 @@ router.get(
 // Route to handle Google OAuth callback
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false }),
+  passport.authenticate('google', { session: false, failureRedirect:process.env.FRONT_END_URL +'signin'}),
   googleAuth
+);
+
+// Route to initiate GitHub login
+router.get('/login/github',
+  passport.authenticate('github', { scope: ['profile', 'email'], session: false ,prompt: 'select_account'})
+);
+
+// Route to handle GitHub OAuth callback
+router.get('/github/callback',
+  passport.authenticate('github', { session: false, failureRedirect: process.env.FRONT_END_URL + 'signin' }),gitHubAuth
 );
 
 // Route to handle token refresh

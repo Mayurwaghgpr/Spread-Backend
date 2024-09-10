@@ -11,7 +11,7 @@ export const userPrepsData = async (req, res) => {
         // Fetch users excluding the current user
         const AllSpreadUsers = await User.findAll({
             where: { id: { [Op.ne]: req.userId } },
-            attributes: ['id', 'username', 'userImage', 'userInfo'],
+            attributes: ['id', 'username', 'userImage', 'bio'],
             order: [[sequelize.fn('RANDOM')]], // Random order
             
             limit: 3

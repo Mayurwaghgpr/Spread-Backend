@@ -175,6 +175,7 @@ export const EditUserProfile = async (req, res) => {
       plain: true
     });
 
+
     if (updatedUser) {
       res.status(200).json(updatedUser); // Return updated user info
     } else {

@@ -124,6 +124,7 @@ export const AddNewPost = async (req, res) => {
                 });
             });
 
+            userInfo
             await PostContent.bulkCreate(PostData);
         }
         res.status(201).json({ newData: newPost, message: 'Post created successfully' });

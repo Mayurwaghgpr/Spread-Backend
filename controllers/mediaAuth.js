@@ -13,24 +13,14 @@ const CookieOptions = {
 };
 
 export const googleAuth = async (req, res, next) => {
-    const profile = req.user;
-    console.log(profile)
+    const user = req.user;
+    console.log(user)
     try {
-        let user = await User.findOne({ where: { email: profile.emails[0].value } });
-        if (!user) {
-            user = await User.create({
-                username: profile.displayName,
-                email: profile.emails[0].value,
-                userImage: profile.photos[0].value,
-                password:profile.id,
-            });
-        }
-
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
             id: user.id,
             email: user.email,
             name: user.username,
-            image: profile._json.picture,
+            image: user.userImage,
         });
 
         res
@@ -41,3 +31,23 @@ export const googleAuth = async (req, res, next) => {
         next(error);
     }
 };
+
+export const gitHubAuth = async(req,res,next) => {
+         const user = req.user;
+    console.log(user)
+    try {
+
+        const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
+            id: user.id,
+            email: user.email,
+            name: user.username,
+            image: user.userImage,
+        });
+
+        res.cookie('AccessToken', AccessToken, CookieOptions)
+            .cookie('RefreshToken', RefreshToken, CookieOptions)
+            .redirect(process.env.FRONT_END_URL);
+    } catch (error) {
+        next(error);
+    }
+}

@@ -18,15 +18,20 @@ const User = Database.define('User', {
         allowNull: false,
         unique: true
     },
+    pronouns: {
+          type: DataTypes.STRING,
+    },
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
         validate: {
             isEmail: true
         }
     },
-    userInfo: {
+    signedWith: {
+        type: DataTypes.STRING, 
+    },
+    bio:{
         type: DataTypes.TEXT,
         allowNull: true,
     },

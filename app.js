@@ -6,8 +6,6 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth2";
-
 import sequelize from './utils/database.js';
 import authRouter from "./routes/auth.js";
 import postsRouter from './routes/posts.js';
@@ -18,6 +16,7 @@ import Post from "./models/posts.js";
 import User from "./models/user.js";
 import Follow from "./models/Follow.js";
 import Archive from "./models/Archive.js";
+import {passportStrategies}  from "./utils/passportStartegies.js";
 
 
 dotenv.config();
@@ -40,19 +39,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(multerFileUpload);
 
-// Passport configuration
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_REDIRECT_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      done(null, profile); 
-    }
-  )
-);
+//Login with google/gitub
+passportStrategies(passport)
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
