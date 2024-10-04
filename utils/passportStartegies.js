@@ -14,7 +14,11 @@ export const passportStrategies = (passport) => {
       },
         async (accessToken, refreshToken, profile, done) => {
           console.log(profile)
-        try {
+       
+          try {
+            if (!profile) {
+            return
+          }
           let user = await User.findOne({ where: {username:profile.displayName } });
           if (!user) {
             user = await User.create({
@@ -40,9 +44,13 @@ export const passportStrategies = (passport) => {
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: process.env.GITHUB_CALLBACK_URL,
       },
-        async (accessToken, refreshToken, profile, done) => {
-          console.log(profile)
+      async (accessToken, refreshToken, profile, done) => {
+                  console.log(profile)
+  
         try {
+                if (!profile) {
+            return
+          }
           let user = await User.findOne({ where: { username:profile.username } });
           if (!user) {
             user = await User.create({

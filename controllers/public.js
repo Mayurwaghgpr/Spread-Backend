@@ -6,7 +6,7 @@ import Archive from "../models/Archive.js";
 import Likes from "../models/Likes.js";
 
 // Fetch all users except the current user and distinct topics
-export const userPrepsData = async (req, res) => {
+export const userPrepsData = async (req, res,next) => {
     try {
         // Fetch users excluding the current user
         const AllSpreadUsers = await User.findAll({
@@ -29,12 +29,13 @@ export const userPrepsData = async (req, res) => {
         res.status(200).json({ topics, AllSpreadUsers });
     } catch (error) {
         console.error('Error fetching utility data:', error);
-        res.status(500).send('Server error');
+      // res.status(500).send('Server error');
+      next(error)
     }
 };
 
 // Search for posts based on a query string
-export const searchData = async (req, res) => {
+export const searchData = async (req, res,next) => {
     const searchQuery = req.query.q;
     
     try {
@@ -67,7 +68,8 @@ export const searchData = async (req, res) => {
         res.status(200).json(searchResult);
     } catch (error) {
         console.error('Error searching data:', error);
-        res.status(500).json({ error: 'An error occurred while searching data' });
+      // res.status(500).json({ error: 'An error occurred while searching data' });
+      next(error)
     }
 };
 
@@ -138,7 +140,7 @@ export const FollowUser = async (req, res, next) => {
 
 
 // Add a post to the user's archive
-export const AddPostToArchive = async (req, res) => {
+export const AddPostToArchive = async (req, res,next) => {
   const { postId } = req.body;
 
   try {
@@ -159,12 +161,13 @@ export const AddPostToArchive = async (req, res) => {
     res.status(200).json({ message: 'Post archived successfully', archived });
   } catch (error) {
     console.error('Error archiving post:', error);
-    res.status(500).json({ message: 'An error occurred while archiving the post' });
+    // res.status(500).json({ message: 'An error occurred while archiving the post' });
+    next(error)
   }
 };
 
 // Remove archived post for current user
-export const removeFromArchive = async (req, res) => {
+export const removeFromArchive = async (req, res,next) => {
   const UserId = req.userId;
   const postId = req.query.id
   console.log({postId})
@@ -179,7 +182,8 @@ try {
   }
 } catch (error) {
    console.error('Error archiving post:', error);
-    res.status(500).json({ message: 'An error occurred while archiving the post' });
+  // res.status(500).json({ message: 'An error occurred while archiving the post' });
+  next(error)
 
 }
 } 

@@ -12,7 +12,7 @@ dotenv.config();
 const storage = multer.diskStorage({
   // Define the destination folder based on the field name
   destination: function (req, file, cb) {
-    console.log('file', file);
+    // console.log('file', file);
     if (file.fieldname === 'NewImageFile') {
       // Save images for 'NewImageFile' in 'images/userImage/'
       cb(null, path.join(`images/userImage/`));

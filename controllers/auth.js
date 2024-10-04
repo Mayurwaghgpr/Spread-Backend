@@ -16,7 +16,7 @@ const CookieOptions = {
 };
 
 // Sign up a new user
-export const SignUp = async (req, res) => {
+export const SignUp = async (req, res,next) => {
     const { username, email, password } = req.body;
 
     // Validate required fields
@@ -59,13 +59,14 @@ export const SignUp = async (req, res) => {
             .json({ user: newUser.dataValues, AccessToken, RefreshToken });
 
     } catch (err) {
+        next(err)
         console.error('Error during sign up:', err);
-        res.status(500).json({ message: 'Server error' });
+        // res.status(500).json({ message: 'Server error' });
     }
 };
 
 // Log in an existing user
-export const SignIn = async (req, res) => {
+export const SignIn = async (req, res,next) => {
     const { email, password } = req.body;
 
     // Validate required fields
@@ -124,7 +125,8 @@ export const SignIn = async (req, res) => {
             .json({ user: user.dataValues, AccessToken, RefreshToken });
     } catch (err) {
         console.error('Error during login:', err);
-        res.status(500).json({ message: err.message });
+        next(err)
+        // res.status(500).json({ message: err.message });
     }
 };
 
@@ -132,7 +134,7 @@ export const SignIn = async (req, res) => {
 
 
 // Refresh access token using refresh token
-export const RefreshToken = async (req, res) => {
+export const RefreshToken = async (req, res,next) => {
        console.log("Request Cookies:", req.cookies);
     // Extract token from cookies or Authorization header
     const clientRefreshToken = req.cookies.RefreshToken || req.header("Authorization")?.replace("Bearer ", "");
@@ -172,7 +174,8 @@ export const RefreshToken = async (req, res) => {
 
     } catch (error) {
         console.error('Error during token refresh:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        next(error)
+        // res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -188,7 +191,8 @@ export const Logout = async (req, res) => {
         res.json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error('Error during logout:', error);
-        res.status(500).json({ message: 'Server error' });
+        // res.status(500).json({ message: 'Server error' });
+        next(error)
 
     }
 };

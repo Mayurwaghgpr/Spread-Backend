@@ -10,7 +10,7 @@ import Likes from "../models/Likes.js";
 const EXPIRATION = 3600;
 
 // Get user profile
-export const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res,next) => {
   const id = req?.params?.id || req.userId;
 
   try {
@@ -38,13 +38,14 @@ export const getUserProfile = async (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    return res.status(500).json({ message: 'An error occurred while fetching user profile' });
+    // return res.status(500).json({ message: 'An error occurred while fetching user profile' });
+    next(error)
   }
 };
 
 
 // Get posts by user ID
-export const getUserPostsById = async (req, res) => {
+export const getUserPostsById = async (req, res,next) => {
   const userId = req.params.userId;
   const limit = parseInt(req.query.limit?.trim()) || 3; // Default limit to 3
   const page = parseInt(req.query.page?.trim()) || 1; // Default page to 1
@@ -72,14 +73,15 @@ export const getUserPostsById = async (req, res) => {
     }
   } catch (error) {
     console.error('Server error:', error);
-    res.status(500).send('Server error');
+    // res.status(500).send('Server error');
+    next(error)
   }
 };
 
 
 
 // Get followers of the current user
-export const getFollowers = async (req, res) => {
+export const getFollowers = async (req, res,next) => {
   const userId = req?.params?.userId || req.userId;
   try {
     const user = await User.findByPk(userId, {
@@ -88,12 +90,13 @@ export const getFollowers = async (req, res) => {
 
     res.status(200).json(user.Followers);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // res.status(400).json({ error: error.message });
+    next(error)
   }
 };
 
 // Get users that the current user is following
-export const getFollowing = async (req, res) => {
+export const getFollowing = async (req, res,next) => {
   const userId = req?.params?.userId||req.userId;
 
   try {
@@ -103,13 +106,14 @@ export const getFollowing = async (req, res) => {
 
     res.status(200).json(user.Following);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // res.status(400).json({ error: error.message });
+    next(error)
   }
 };
 
 
 // Get archived posts for the current user
-export const getArchivedPosts = async (req, res) => {
+export const getArchivedPosts = async (req, res,next) => {
   const userId = req.userId;
   const limit = parseInt(req.query.limit?.trim()) || 3; // Default limit to 3
   const page = parseInt(req.query.page?.trim()) || 1; // Default page to 1
@@ -143,12 +147,13 @@ export const getArchivedPosts = async (req, res) => {
     res.status(200).json(postData);
   } catch (error) {
     console.error('Error fetching archived posts:', error);
-    res.status(500).json({ message: 'An error occurred while fetching archived posts' });
+    // res.status(500).json({ message: 'An error occurred while fetching archived posts' });
+    next(error)
   }
 };
 
 // Edit user profile
-export const EditUserProfile = async (req, res) => {
+export const EditUserProfile = async (req, res,next) => {
   const image = req.files ? req.files : [];
   const data = req.body;
   let updatedData = { ...data };
@@ -183,6 +188,7 @@ export const EditUserProfile = async (req, res) => {
     }
   } catch (err) {
     console.error("Error updating profile:", err);
-    res.status(500).json({ message: "Internal server error" });
+    // res.status(500).json({ message: "Internal server error" });
+    next(err)
   }
 };

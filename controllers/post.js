@@ -9,7 +9,7 @@ import { stringify } from "uuid";
 
 
 // Fetch all posts with optional topic filtering, pagination, and user inclusion
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res,next) => {
     // Extract query parameters with defaults
     const type = req.query.type?.toLowerCase().trim() || 'all';
     const limit = parseInt(req.query.limit?.trim()) || 3;
@@ -47,12 +47,13 @@ console.log(type,limit,page)
         }
     } catch (error) {
         console.error('Server error:', error);
-        res.status(500).send('Server error');
+        // res.status(500).send('Server error');
+        next(error)
     }
 };
 
 // Fetch a post by its ID along with associated content and images
-export const PostAllContent = async (req, res) => {
+export const PostAllContent = async (req, res,next) => {
     const id = req.params.id;
 console.log("first")
     try {
@@ -75,26 +76,27 @@ console.log("first")
         res.status(200).json(post);
     } catch (error) {
         console.error('Error fetching post:', error);
-        res.status(500).send('Server error');
+        // res.status(500).send('Server error');
+        next(error)
     }
 };
 
 
 
 // Add a new post with associated content and images
-export const AddNewPost = async (req, res) => {
+export const AddNewPost = async (req, res,next) => {
     let imageArr = [];
     try {
         // Parse blog data and handle images
         const otherData = JSON.parse(req.body.blog);
         const imageFileArray = req.files;
-        imageArr = imageFileArray.map(image => image.path);
+        // console.log(imageFileArray)
         const topic = req.body.Topic.toLowerCase();
 
         const postTitle = otherData.find(p => p.index === 0)?.data;
         const subtitleParagraph = otherData.at(1)?.data;
         const titleImage = imageFileArray?.at(0);
-        console.log({postTitle,subtitleParagraph,titleImage})
+        // console.log({postTitle,subtitleParagraph,titleImage})
 
         if (!postTitle || !subtitleParagraph || !titleImage) {
             return res.status(400).json({ error: 'Invalid data provided' });
@@ -114,17 +116,15 @@ export const AddNewPost = async (req, res) => {
         const otherPostData = otherData.filter(p => p.index !== 0 && p.index !== 1)
         // Save post content
         if (otherData.length) {
-            imageFileArray.forEach(image => {
+            imageFileArray.forEach((image,idx) => {
                 PostData = otherPostData.map(p => { 
-                    if (p.type ==='image' && p.index === Number(image.fieldname.split('-')[1]) ) {
+                    if (p.type ==='image' && idx!==0 && p.index === Number(image.fieldname.split('-')[1]) ) {
                     return { type:p.type, content:`${process.env.BASE_URL}${image.path}`,otherInfo:p.data,index:p.index, postId: newPost.id }
                     } else {
                     return { type: p.type, content:p.data,index:p.index, postId: newPost.id }
                     }
                 });
             });
-
-            userInfo
             await PostContent.bulkCreate(PostData);
         }
         res.status(201).json({ newData: newPost, message: 'Post created successfully' });
@@ -132,12 +132,13 @@ export const AddNewPost = async (req, res) => {
         // Clean up images if there's an error
         await deletePostImage(imageArr);
         console.error('Error adding new post:', error);
-        res.status(500).send('Server error');
+        // res.status(500).send('Server error');
+        next(error)
     }
 };
 
 // Edit an existing post by its ID
-export const EditPost = async (req, res) => {
+export const EditPost = async (req, res,next) => {
     try {
         const post = await Post.findByPk(req.params.id);
         if (!post) {
@@ -154,14 +155,15 @@ export const EditPost = async (req, res) => {
         res.json(post);
     } catch (error) {
         console.error('Error editing post:', error);
-        res.status(500).send('Server error');
+        // res.status(500).send('Server error');
+        next(error)
     }
 };
 
 // Delete a post by its ID and associated images
-export const DeletePost = async (req, res) => {
+export const DeletePost = async (req, res,next) => {
     const postId = req.params.postId;
-
+console.log({postId})
     try {
         const post = await Post.findOne({
             where: { id: postId },
@@ -198,18 +200,20 @@ export const DeletePost = async (req, res) => {
         // Delete images if present
         if (imageUrls.length > 0) {
             const imagesDeleted = await deletePostImage(imageUrls);
-
+            console.log(imagesDeleted)
             if (!imagesDeleted) {
                 return res.status(500).json({ message: 'Error deleting images' });
             }
+
+                // Delete the post itself
+                await post.destroy();
         }
 
-        // Delete the post itself
-        await post.destroy();
 
         res.status(200).json({ id: postId, message: 'Post deleted successfully' });
     } catch (error) {
         console.error('Error deleting post:', error);
-        res.status(500).json({ message: 'Server error' });
+        // res.status(500).json({ message: 'Server error' });
+        next(error)
     }
 };
