@@ -20,12 +20,12 @@ router.get("/search", IsAuth, searchData);
 
 
 // Put Routes
-router.put('/Like/',IsAuth,LikePost)
+router.put('/like/',IsAuth,LikePost)
 router.put('/follow', IsAuth, FollowUser);
 router.put('/archive', IsAuth, AddPostToArchive);// Changed route to 'archive' for consistency
 
 
 //Delete Routes
-router.delete('/Archive',IsAuth,removeFromArchive)
+router.delete('/archive',IsAuth,removeFromArchive)
 
 export default router;

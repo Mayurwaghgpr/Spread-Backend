@@ -37,15 +37,15 @@ router.get('/refresh-token', RefreshToken);
 router.post('/signup', SignUp);
 
 // Route to handle user login
-router.post('/login', SignIn);
+router.post('/signin', SignIn);
 
 // Route to handle user logout, requires authentication
 router.post('/logout', IsAuth, Logout);
 
-router.post('/ForgotPassword',forgotPass)
+router.post('/forgotpassword',forgotPass)
 
 //Route to handle reset password,
-router.put('/ResetPassword/:token',resetPassword)
+router.put('/resetpassword/:token',resetPassword)
 
 
 

@@ -13,15 +13,15 @@ import IsAuth from '../middlewares/isAuth.js';
 const router = express.Router();
 
 // Get Routes
-router.get('/loggedInUser', IsAuth, getUserProfile); // Changed route to 'loggedInUser' for clarity
+router.get('/details', IsAuth, getUserProfile); 
 router.get('/profile/:id', IsAuth, getUserProfile);
-router.get('/userData/:userId', IsAuth, getUserPostsById);
+router.get('/posts/:userId', IsAuth, getUserPostsById);
 router.get('/followers/:userId', IsAuth, getFollowers);
 router.get('/following/:userId', IsAuth, getFollowing);
-router.get('/archivedPosts', IsAuth, getArchivedPosts); // Changed route to 'archivedPosts' for consistency
+router.get('/posts/archived', IsAuth, getArchivedPosts); 
 
 // Post Routes
-router.post('/editProfile', IsAuth, EditUserProfile);
+router.post('/profile/edit', IsAuth, EditUserProfile);
 
 
 export default router;

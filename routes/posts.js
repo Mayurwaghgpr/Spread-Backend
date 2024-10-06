@@ -6,7 +6,7 @@ import IsAuth from '../middlewares/isAuth.js';
 const router = express.Router();
 
 // Route to get all posts (authenticated users only)
-router.get("/All", IsAuth, getPosts);
+router.get("/all", IsAuth, getPosts);
 
 // Route to get a single post by ID
 // Requires authentication middleware
