@@ -90,6 +90,7 @@ Post.belongsToMany(User, { through: Archive, as: 'UsersSaved', foreignKey: 'Post
 Archive.belongsTo(User, { as: 'User', foreignKey: 'UserId' });
 Archive.belongsTo(Post, { as: 'Post', foreignKey: 'PostId' });
 
+
 // Error Handling Middleware
 app.use((error, req, res, next) => {
   console.error('Error:', error);
@@ -104,9 +105,9 @@ app.use((error, req, res, next) => {
 // Database Sync and Server Start
 sequelize.sync()
   .then(() => {
-    app.listen(port, () => {
-      console.log(`API is running at http://localhost:${port}`);
-    });
+    // app.listen(port, () => {
+    //   console.log(`API is running at http://localhost:${port}`);
+    // });
   })
   .catch(err => {
     console.error('Database connection failed:', err.message);
@@ -114,3 +115,4 @@ sequelize.sync()
       console.error(err.stack);
     }
   });
+export default app;
