@@ -11,6 +11,7 @@ const IsAuth = (req, res, next) => {
     // If no token is provided, send an unauthorized error
     if (!Authorization) {
         const error = new Error('Unauthorized Access, Access denied!');
+        console.log('Unauthorized Access, Access denied!')
         error.statusCode = 401;
         return next(error);
     }

@@ -9,7 +9,8 @@ const saltRounds = 10;
 
 const CookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',  // Dynamically set based on environment
+    secure: true,  // Dynamically set based on environment
+     sameSite: 'none',
 };
 
 export const googleAuth = async (req, res, next) => {
