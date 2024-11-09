@@ -34,10 +34,10 @@
     "passport-github": "^1.1.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth2": "^0.2.0",
-    "pg": "^8.11.5",
+    "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "redis": "^4.7.0",
-    "sequelize": "^6.37.3",
+    "sequelize": "^6.37.5",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1"
   }
