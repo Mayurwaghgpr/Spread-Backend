@@ -14,6 +14,7 @@ const CookieOptions = {
     httpOnly: true,
     secure: true,  // Set to false if not using HTTPS
     sameSite: 'none',
+    path: '/',
     domain: '.vercel.app',
 };
 
