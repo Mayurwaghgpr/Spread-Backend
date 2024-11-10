@@ -13,7 +13,8 @@ const saltRounds = 10;
 const CookieOptions = {
     httpOnly: true,
     secure: true,  // Set to false if not using HTTPS
-     sameSite: 'lax',
+    sameSite: 'none',
+     domain: '.vercel.app',
 };
 
 // Sign up a new user
