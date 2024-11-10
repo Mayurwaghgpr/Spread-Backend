@@ -7,7 +7,7 @@ dotenv.config();
 const IsAuth = (req, res, next) => {
     // Get the authorization token from cookies or headers
     const Authorization = req.cookies.AccessToken || req.header("Authorization")?.replace("Bearer ", "");
-  
+    console.log(req.cookies.AccessToken )
     // If no token is provided, send an unauthorized error
     if (!Authorization) {
         const error = new Error('Unauthorized Access, Access denied!');
