@@ -40,6 +40,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(multerFileUpload);
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 //Login with google/gitub
 passportStrategies(passport)
 
