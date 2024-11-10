@@ -13,7 +13,7 @@ const saltRounds = 10;
 const CookieOptions = {
     secure: true,  // Set to false if not using HTTPS
      sameSite: 'none',
-      path: '/'
+    path: '/',
 };
 
 // Sign up a new user
