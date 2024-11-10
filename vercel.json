@@ -4,22 +4,14 @@
     { "src": "app.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "app.js","methods":["POST", "GET", "PUT", "PATCH", "DELETE"],"headers": [
+    { "src": "/(.*)", "dest": "app.js","methods":["POST", "GET", "PUT", "PATCH", "DELETE"],
+   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://spead.vercel.app"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET,POST,PUT,DELETE,OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "https://spead.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" }
       ]
     }
   ]}
