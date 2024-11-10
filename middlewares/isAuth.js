@@ -6,7 +6,7 @@ dotenv.config();
 // Middleware to check if the user is authenticated
 const IsAuth = (req, res, next) => {
     // Get the authorization token from cookies or headers
-    console.log(req.cookies)
+    console.log('cookies',req.cookies)
     const Authorization = req.cookies.AccessToken || req.header("Authorization")?.replace("Bearer ", "");
           console.log({Authorization})
     // If no token is provided, send an unauthorized error
