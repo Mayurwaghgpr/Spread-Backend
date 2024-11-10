@@ -11,9 +11,9 @@ const saltRounds = 10;
 
 // Cookie options for setting secure, HTTP-only cookies
 const CookieOptions = {
+    httpOnly: true,
     secure: true,  // Set to false if not using HTTPS
-     sameSite: 'none',
-    path: '/',
+     sameSite: 'lax',
 };
 
 // Sign up a new user
