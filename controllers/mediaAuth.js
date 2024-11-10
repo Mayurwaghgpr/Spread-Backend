@@ -11,6 +11,7 @@ const CookieOptions = {
     httpOnly: true,
     secure: true,  // Dynamically set based on environment
      sameSite: 'none',
+      path: '/',
 };
 
 export const googleAuth = async (req, res, next) => {
