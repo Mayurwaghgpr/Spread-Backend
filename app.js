@@ -27,10 +27,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["https://spead.vercel.app","http://localhost:5173","http://localhost:3000"], // Allowed origins
+  origin: ["https://spread.vercel.app", "http://localhost:5173", "http://localhost:3000"], // Allowed origins
   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"], // Allowed HTTP methods
   credentials: true, // Allow credentials (cookies, authentication) to be sent
-  
+
 }));
 app.options('*', cors());  // Handles preflight requests
 
