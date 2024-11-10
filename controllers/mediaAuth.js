@@ -8,6 +8,7 @@ dotenv.config();
 const saltRounds = 10;
 
 const CookieOptions = {
+    httpOnly: true,
     secure: true,  // Dynamically set based on environment
      sameSite: 'none',
       path: '/',

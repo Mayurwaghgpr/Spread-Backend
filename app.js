@@ -111,9 +111,9 @@ app.use((error, req, res, next) => {
 // Database Sync and Server Start
 sequelize.sync()
   .then(() => {
-    // app.listen(port, () => {
-    //   console.log(`API is running at http://localhost:${port}`);
-    // });
+    app.listen(port, () => {
+      console.log(`API is running at http://localhost:${port}`);
+    });
   })
   .catch(err => {
     console.error('Database connection failed:', err.message);
