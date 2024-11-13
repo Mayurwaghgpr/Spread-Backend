@@ -26,12 +26,33 @@ const port = process.env.PORT || 3000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
-app.use(cors({
-  origin: ["https://spread-six.vercel.app"], // Ensure this is the exact frontend URL
-  methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"], // Allow headers
-  credentials: true, // Allow cookies
-}));
+// app.all(cors({
+//   origin: ["https://spread-six.vercel.app"], // Ensure this is the exact frontend URL
+//   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"], // Allow headers
+//   credentials: true, // Allow cookies
+// }));
+app.use((req, res, next) => {
+  // Allow origin to your frontend app URL or use '*' for all origins (not recommended for production)
+  res.header("Access-Control-Allow-Origin", "https://spread-six.vercel.app");
+  
+  // Allow credentials to enable cookies and token-based authentication
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  // Allow specific HTTP methods (adjust as necessary)
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
+
+  // Allow specific headers
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+
+  // For handling preflight requests (OPTIONS method)
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200); // Immediately respond with success for preflight
+  } else {
+    next(); // Proceed to the next middleware or route handler
+  }
+});
+
 
 app.use(express.json());
 app.use(cookieParser());
