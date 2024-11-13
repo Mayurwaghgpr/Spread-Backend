@@ -8,7 +8,7 @@ const CookieOptions = {
    httpOnly: true,      // Accessible only by the server
     secure: true,       // Not secure, since we're on HTTP on localhost
     sameSite: 'lax',
-    domain:"https://spread-six.vercel.app",
+    domain:"https://spread-backend.vercel.app",
 };
 
 export const googleAuth = async (req, res, next) => {
