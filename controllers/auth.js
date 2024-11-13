@@ -11,8 +11,8 @@ const saltRounds = 10;
 
 // Cookie options for setting secure, HTTP-only cookies
 const CookieOptions = {
- httpOnly: true,      // Accessible only by the server
-    secure: true,       // Not secure, since we're on HTTP on localhost
+ httpOnly: false,      // Accessible only by the server
+    secure: false,       // Not secure, since we're on HTTP on localhost
     sameSite: 'lax',
 };
 
