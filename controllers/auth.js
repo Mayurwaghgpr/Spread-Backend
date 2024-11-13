@@ -14,6 +14,7 @@ const CookieOptions = {
  httpOnly: true,      // Accessible only by the server
     secure: true,       // Not secure, since we're on HTTP on localhost
     sameSite: 'lax',
+        domain:"https://spread-six.vercel.app",
 };
 
 // Sign up a new user
