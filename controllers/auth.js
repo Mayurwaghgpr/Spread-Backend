@@ -12,8 +12,8 @@ const saltRounds = 10;
 // Cookie options for setting secure, HTTP-only cookies
 const CookieOptions = {
   httpOnly: true,  // Makes the cookie inaccessible from JavaScript (for security)
-  secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS
-  sameSite: 'None', // This allows the cookie to be sent with cross-origin requests
+  secure: false, // Ensures cookies are sent over HTTPS
+  sameSite: 'lax', // This allows the cookie to be sent with cross-origin requests
 
 };
 

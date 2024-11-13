@@ -1,16 +1,13 @@
-import User from '../models/user.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import AccessAndRefreshTokenGenerator from '../utils/AccessAndRefreshTokenGenerator.js';
 
 dotenv.config();
-const saltRounds = 10;
+
 
 const CookieOptions = {
     httpOnly: true,  // Makes the cookie inaccessible from JavaScript (for security)
-  secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS
-  sameSite: 'None', // This allows the cookie to be sent with cross-origin requests
+  secure: false, // Ensures cookies are sent over HTTPS
+  sameSite: 'lax', // This allows the cookie to be sent with cross-origin requests
 
 };
 
