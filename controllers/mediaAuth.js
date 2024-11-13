@@ -8,11 +8,9 @@ dotenv.config();
 const saltRounds = 10;
 
 const CookieOptions = {
-    httpOnly: true,
-    secure: true,  // Dynamically set based on environment
-    sameSite: 'none',
-    path: '/',
-     domain: '.vercel.app',
+   httpOnly: true,      // Accessible only by the server
+    secure: true,       // Not secure, since we're on HTTP on localhost
+    sameSite: 'lax',
 };
 
 export const googleAuth = async (req, res, next) => {
@@ -37,7 +35,6 @@ export const googleAuth = async (req, res, next) => {
 
 export const gitHubAuth = async(req,res,next) => {
          const user = req.user;
-    console.log(user)
     try {
 
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({

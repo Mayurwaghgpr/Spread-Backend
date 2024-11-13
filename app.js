@@ -6,7 +6,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "passport";
-import sequelize from './utils/database.js';
+import Database from './utils/database.js';
 import authRouter from "./routes/auth.js";
 import postsRouter from './routes/posts.js';
 import userRouter from './routes/user.js';
@@ -27,12 +27,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["https://spead.vercel.app", "http://localhost:5173", "http://localhost:3000"], // Allowed origins
-  methods: ["POST", "GET", "PUT", "PATCH", "DELETE"], // Allowed HTTP methods
-  credentials: 'include', // Allow credentials (cookies, authentication) to be sent
-
+  origin: ["https://spead.vercel.app", "http://localhost:5173",""],
+  methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
+  credentials: true,
 }));
-app.options('*', cors());  // Handles preflight requests
 
 app.use(express.json());
 app.use(cookieParser());
@@ -110,16 +108,17 @@ app.use((error, req, res, next) => {
 });
 
 // Database Sync and Server Start
-sequelize.sync()
+Database.sync()
   .then(() => {
     app.listen(port, () => {
       console.log(`API is running at http://localhost:${port}`);
     });
   })
   .catch(err => {
-    console.error('Database connection failed:', err.message);
+    console.error(err);
     if (process.env.NODE_ENV === 'development') {
       console.error(err.stack);
+
     }
   });
 export default app;

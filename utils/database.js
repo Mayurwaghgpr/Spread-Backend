@@ -3,11 +3,11 @@ import dotenv from 'dotenv';
 import pg from 'pg';
 
 dotenv.config();
-console.log(process.env.DATABASE_URL)
+// console.log(process.env.DATABASE_URL)
 
 const Database = new Sequelize(process.env.DATABASE_URL, {
+
   dialect: 'postgres',
-  protocol: 'postgres',
   dialectOptions: {
     ssl: {
       require: true,
@@ -15,4 +15,6 @@ const Database = new Sequelize(process.env.DATABASE_URL, {
     },
   },
 });
+
+
 export default Database

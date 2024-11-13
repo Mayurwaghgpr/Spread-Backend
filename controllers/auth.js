@@ -11,17 +11,15 @@ const saltRounds = 10;
 
 // Cookie options for setting secure, HTTP-only cookies
 const CookieOptions = {
-    httpOnly: true,
-    secure: true,  // Set to false if not using HTTPS
-    sameSite: 'none',
-    path: '/',
-    domain: '.vercel.app',
+ httpOnly: true,      // Accessible only by the server
+    secure: true,       // Not secure, since we're on HTTP on localhost
+    sameSite: 'lax',
 };
 
 // Sign up a new user
 export const SignUp = async (req, res,next) => {
     const { username, email, password } = req.body;
-
+console.log({ username, email, password })
     // Validate required fields
     if (!username || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });

@@ -102,7 +102,6 @@ export const LikePost = async (req, res, next) => {
 // Follow/unfollow a user
 export const FollowUser = async (req, res, next) => {
   const { followerId, followedId } = req.body;
-  console.log({ followerId, followedId });
 
   if (followerId === followedId) {
     return res.status(400).json({ status: "error", message: "You cannot follow yourself" });
@@ -128,7 +127,7 @@ export const FollowUser = async (req, res, next) => {
 
   
   } catch (error) {
-    if (error instanceof Sequelize.UniqueConstraintError) {
+    if (error ) {
       res.status(409).json({ status: "error", message: "You are already following this user" });
     } else {
       console.error("Error following user:", error);
