@@ -27,9 +27,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["https://spread-six.vercel.app"],
+  origin: ["https://spread-six.vercel.app"], // Ensure this is the exact frontend URL
   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
-  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow headers
+  credentials: true, // Allow cookies
 }));
 
 app.use(express.json());
