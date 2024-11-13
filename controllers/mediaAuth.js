@@ -1,14 +1,13 @@
+
 import dotenv from 'dotenv';
 import AccessAndRefreshTokenGenerator from '../utils/AccessAndRefreshTokenGenerator.js';
 
 dotenv.config();
 
-
 const CookieOptions = {
-    httpOnly: true,  // Makes the cookie inaccessible from JavaScript (for security)
-  secure: false, // Ensures cookies are sent over HTTPS
-  sameSite: 'lax', // This allows the cookie to be sent with cross-origin requests
-
+   httpOnly: true,      // Accessible only by the server
+    secure: true,       // Not secure, since we're on HTTP on localhost
+    sameSite: 'none',
 };
 
 export const googleAuth = async (req, res, next) => {
