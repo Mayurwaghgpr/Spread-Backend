@@ -27,7 +27,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["https://spread-six.vercel.app", "http://localhost:5173",""],
+  origin: ["https://spread-six.vercel.app", "http://localhost:5173"],
   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
   credentials: true,
 }));

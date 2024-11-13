@@ -8,9 +8,10 @@ dotenv.config();
 const saltRounds = 10;
 
 const CookieOptions = {
-   httpOnly: true,      // Accessible only by the server
-    secure: true,       // Not secure, since we're on HTTP on localhost
-    sameSite: 'lax',
+    httpOnly: true,  // Makes the cookie inaccessible from JavaScript (for security)
+  secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS
+  sameSite: 'None', // This allows the cookie to be sent with cross-origin requests
+
 };
 
 export const googleAuth = async (req, res, next) => {
