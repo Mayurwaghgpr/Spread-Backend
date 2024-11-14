@@ -47,7 +47,7 @@ const IsAuth = (req, res, next) => {
     }
 
     // Attach user ID from token to request object for further use
-    req.userId = decodeToken.id;
+    req.authUser = decodeToken;
     next(); // Proceed to the next middleware or route handler
 };
 

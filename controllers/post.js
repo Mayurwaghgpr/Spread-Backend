@@ -110,7 +110,7 @@ export const AddNewPost = async (req, res,next) => {
             subtitelpagraph: subtitleParagraph,
             titleImage:`${process.env.BASE_URL}${titleImageUrl}`,
             topic,
-            authorId: req.userId,
+            authorId: req.authUser.id,
         });
         let PostData;
         const otherPostData = otherData.filter(p => p.index !== 0 && p.index !== 1)

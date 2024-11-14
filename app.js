@@ -16,7 +16,7 @@ import Post from "./models/posts.js";
 import User from "./models/user.js";
 import Follow from "./models/Follow.js";
 import Archive from "./models/Archive.js";
-import {passportStrategies}  from "./utils/passportStartegies.js";
+import {passportStrategies}  from "./middlewares/passportStartegies.js";
 
 
 dotenv.config();
@@ -27,7 +27,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Middleware
 app.use(cors({
-  origin: ["https://spread-six.vercel.app","https://spread-backend.vercel.app"], // Ensure this is the exact frontend URL
+  origin: ["https://spread-six.vercel.app","https://spread-backend.vercel.app","http://localhost:5173"], // Ensure this is the exact frontend URL
   methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
   credentials: true, // Allow cookies
 }));

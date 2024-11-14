@@ -10,7 +10,7 @@ export const userPrepsData = async (req, res,next) => {
     try {
         // Fetch users excluding the current user
         const AllSpreadUsers = await User.findAll({
-            where: { id: { [Op.ne]: req.userId } },
+            where: { id: { [Op.ne]: req.authUser.id } },
             attributes: ['id', 'username', 'userImage', 'bio'],
             order: [[sequelize.fn('RANDOM')]], // Random order
             
@@ -78,7 +78,7 @@ export const LikePost = async (req, res, next) => {
   console.log(postId)
   
     try {
-        const exist = await Likes.findOne({ where: { likedBy: req.userId, postId: postId } });
+        const exist = await Likes.findOne({ where: { likedBy: req.authUser.id, postId: postId } });
         
         // console.log(exist)
         if (exist) {
@@ -87,7 +87,7 @@ export const LikePost = async (req, res, next) => {
           console.log({updtLikes})
         res.status(201).json({ message: 'removed like',updtLikes})
         }else{
-            const result = await Likes.create({ likedBy: req.userId, postId });
+            const result = await Likes.create({ likedBy: req.authUser, postId });
              const updtLikes = await Likes.findAll({where:{postId}})
 
         console.log('like',result)
@@ -145,7 +145,7 @@ export const AddPostToArchive = async (req, res,next) => {
   try {
     const exist = await Archive.findOne({
       where:{PostId: postId,
-      UserId: req.userId}
+      UserId: req.authUser.id}
     });
     console.log({ exist })
     if (exist) {
@@ -154,9 +154,9 @@ export const AddPostToArchive = async (req, res,next) => {
 
     const archived = await Archive.create({
       PostId: postId,
-      UserId: req.userId
+      UserId: req.authUser.id
     });
-          // await redisClient.del(req.userId);
+          // await redisClient.del(req.authUser.id);
     res.status(200).json({ message: 'Post archived successfully', archived });
   } catch (error) {
     console.error('Error archiving post:', error);
@@ -167,7 +167,7 @@ export const AddPostToArchive = async (req, res,next) => {
 
 // Remove archived post for current user
 export const removeFromArchive = async (req, res,next) => {
-  const UserId = req.userId;
+  const UserId = req.authUser.id;
   const postId = req.query.id
   console.log({postId})
 try {

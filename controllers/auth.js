@@ -11,8 +11,8 @@ const saltRounds = 10;
 
 // Cookie options for setting secure, HTTP-only cookies
 const CookieOptions = {
- httpOnly: false,      // Accessible only by the server
-    secure: false,       // Not secure, since we're on HTTP on localhost
+ httpOnly: true,      // Accessible only by the server
+    secure: true,       // Not secure, since we're on HTTP on localhost
     sameSite: 'lax',
 };
 
@@ -45,8 +45,6 @@ console.log({ username, email, password })
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
             id: newUser.id,
             email: newUser.email,
-            name: username,
-            image: newUser.userImage,
         });
 
         if (!AccessToken || !RefreshToken) {
@@ -57,6 +55,7 @@ console.log({ username, email, password })
         res.status(201)
             .cookie('AccessToken', AccessToken, CookieOptions)
             .cookie('RefreshToken', RefreshToken, CookieOptions)
+                       .cookie("_userDetail",newUser,{httpOnly:true})
             .json({ user: newUser.dataValues, AccessToken, RefreshToken });
 
     } catch (err) {
@@ -108,21 +107,17 @@ export const SignIn = async (req, res,next) => {
         const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({
             id: user.id,
             email: user.email,
-            name: username,
-            image: user.userImage,
         });
 
         if (!AccessToken || !RefreshToken) {
             throw new Error("Failed to generate tokens");
         }
 
-        // Update user with new refresh token
-        await User.update({ refreshToken: RefreshToken }, { where: { id: user.id } });
-
         // Set tokens as cookies and respond
         res.status(200)
             .cookie('AccessToken', AccessToken, CookieOptions)
             .cookie('RefreshToken', RefreshToken, CookieOptions)
+                       .cookie("_userDetail",user,{httpOnly:true})
             .json({ user: user.dataValues, AccessToken, RefreshToken });
     } catch (err) {
         console.error('Error during login:', err);
@@ -160,9 +155,7 @@ export const RefreshToken = async (req, res,next) => {
         }
 
         // Generate new access and refresh tokens
-        const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({ id: decodedToken.id,    email: decodedToken.email,
-            name: decodedToken.name,
-            image: decodedToken.image });
+        const { AccessToken, RefreshToken } = AccessAndRefreshTokenGenerator({ id: decodedToken.id,    email: decodedToken.email});
 
         // Update user with new refresh token
         // await User.update({ refreshToken: RefreshToken }, { where: decodedToken.id });
@@ -171,6 +164,7 @@ export const RefreshToken = async (req, res,next) => {
         res.status(200)
             .cookie('AccessToken', AccessToken, CookieOptions)
             .cookie('RefreshToken', RefreshToken, CookieOptions)
+                       .cookie("_userDetail",user,{httpOnly:true})
             .json({ user: user, AccessToken, RefreshToken });
 
     } catch (error) {
@@ -183,12 +177,12 @@ export const RefreshToken = async (req, res,next) => {
 
 // Log out the user by clearing cookies and updating user record
 export const Logout = async (req, res) => {
-    res.clearCookie('AccessToken', CookieOptions);
-    res.clearCookie('RefreshToken', CookieOptions);
-
+    res.clearCookie('AccessToken', CookieOptions)
+    .clearCookie('RefreshToken', CookieOptions)
+    .clearCookie("_userDetail",{httpOnly:true})
     try {
         // Clear refresh token from user record
-        await User.update({ refreshToken: null }, { where: { id: req.userId } });
+        await User.update({ refreshToken: null }, { where: { id: req.authUser.id } });
         res.json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error('Error during logout:', error);

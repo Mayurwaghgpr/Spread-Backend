@@ -9,9 +9,14 @@ import Likes from "../models/Likes.js";
 
 const EXPIRATION = 3600;
 
+export const getLoginUser =async (req, res,nex) => {
+  const userInfo= req.cookies._userDetail 
+  
+   res.status(200).json(userInfo);
+}
 // Get user profile
 export const getUserProfile = async (req, res,next) => {
-  const id = req?.params?.id || req.userId;
+  const id = req?.params?.id || req.authUser.id;
 
   try {
     // const cachedUserData = await redisClient.get(id);
@@ -82,7 +87,7 @@ export const getUserPostsById = async (req, res,next) => {
 
 // Get followers of the current user
 export const getFollowers = async (req, res,next) => {
-  const userId = req?.params?.userId || req.userId;
+  const userId = req?.params?.userId || req.authUser.id;
   try {
     const user = await User.findByPk(userId, {
       include: [{ model: User, as: 'Followers' }]
@@ -97,7 +102,7 @@ export const getFollowers = async (req, res,next) => {
 
 // Get users that the current user is following
 export const getFollowing = async (req, res,next) => {
-  const userId = req?.params?.userId||req.userId;
+  const userId = req?.params?.userId||req.authUser.id;
 
   try {
     const user = await User.findByPk(userId, {
@@ -114,7 +119,7 @@ export const getFollowing = async (req, res,next) => {
 
 // Get archived posts for the current user
 export const getArchivedPosts = async (req, res,next) => {
-  const userId = req.userId;
+  const userId = req.authUser.id;
   const limit = parseInt(req.query.limit?.trim()) || 3; // Default limit to 3
   const page = parseInt(req.query.page?.trim()) || 1; // Default page to 1
 
@@ -174,7 +179,7 @@ export const EditUserProfile = async (req, res,next) => {
 
     delete data.userFromOAuth;
     const [_, updatedUser] = await User.update(updatedData, {
-      where: { id: req.userId },
+      where: { id: req.authUser.id },
       attributes: { exclude: ['password'] },
       returning: true,
       plain: true
@@ -182,6 +187,7 @@ export const EditUserProfile = async (req, res,next) => {
 
 
     if (updatedUser) {
+      res.cookies("_userDetail",updatedUser,{httpOnly:true})
       res.status(200).json(updatedUser); // Return updated user info
     } else {
       res.status(400).json({ message: "User not found" });
