@@ -7,7 +7,8 @@ dotenv.config();
 const CookieOptions = {
    httpOnly: false,      // Accessible only by the server
     secure: true,       // Not secure, since we're on HTTP on localhost
-    sameSite: 'none',
+  sameSite: 'None',
+  maxAge: 24 * 60 * 60 * 1000
 };
 
 export const googleAuth = async (req, res, next) => {
